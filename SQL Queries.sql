@@ -1,0 +1,13 @@
+use smart_finance_db;
+select * from assets;
+select * from audit_logs;
+select * from budgets;
+select * from goals;
+select * from investments;
+select * from liabilities;
+select * from notifications;
+select * from recurring_transactions;
+select * from subscriptions;
+select * from transactions;
+select * from user_settings;
+select * from users;

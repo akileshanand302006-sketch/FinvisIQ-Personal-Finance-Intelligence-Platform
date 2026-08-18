@@ -1,0 +1,40 @@
+# Java
+*.class
+*.jar
+
+# Build folders
+bin/
+out/
+target/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# JavaFX / temporary
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+*.env
+
+# Database credentials
+application.properties
+database.properties
+config.properties
+
+# Generated reports
+reports/generated/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Personal/local configuration
+local/
