@@ -81,7 +81,7 @@ public class InvestmentApiController {
         return ResponseEntity.ok(ApiResponse.success("Investment deleted successfully", null));
     }
 
-    @PostMapping("/sip-calculate")
+    @PostMapping({"/sip-calculate", "/sip-calculator"})
     public ResponseEntity<ApiResponse<SIPCalculationResponse>> calculateSIP(
             @Valid @RequestBody SIPCalculationRequest request) {
 

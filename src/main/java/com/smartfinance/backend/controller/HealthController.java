@@ -26,7 +26,15 @@ public class HealthController {
         data.put("version", "2.0.0");
         data.put("timestamp", Instant.now().toString());
 
-        return ResponseEntity.ok(ApiResponse.success("Service is healthy", data));
+        boolean dbConnected = false;
+        try (Connection conn = DatabaseManager.getInstance().getConnection()) {
+            dbConnected = (conn != null && !conn.isClosed());
+        } catch (Exception ignore) {}
+
+        data.put("databaseConnected", dbConnected);
+        data.put("dbConnected", dbConnected);
+
+        return ResponseEntity.ok(ApiResponse.success(dbConnected ? "Service and Database are healthy" : "Service healthy, database reconnecting", data));
     }
 
     @GetMapping("/db")

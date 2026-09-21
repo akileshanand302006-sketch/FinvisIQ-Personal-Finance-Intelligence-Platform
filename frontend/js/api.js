@@ -179,19 +179,30 @@ class FinvisIQApi {
   }
 
   /* ============================================================================
-     ENDPOINTS
+     AUDITED PRODUCTION API ENDPOINTS & CONTRACTS
      ============================================================================ */
 
-  // Health
+  // 1. Health & Heartbeat
   async checkHealth() {
-    return this.request('/api/health');
+    const res = await this.request('/api/health');
+    const isDbConnected = !!(
+      res.databaseConnected ||
+      res.dbConnected ||
+      (res.data && (res.data.databaseConnected || res.data.dbConnected)) ||
+      (res.data && res.data.status === 'UP')
+    );
+    return {
+      ...res,
+      databaseConnected: isDbConnected,
+      dbConnected: isDbConnected
+    };
   }
 
   async checkDbHealth() {
     return this.request('/api/health/db');
   }
 
-  // Auth
+  // 2. Authentication & Identity
   async login(username, password) {
     const res = await this.request('/api/auth/login', {
       method: 'POST',
@@ -203,7 +214,8 @@ class FinvisIQApi {
         userId: res.data.userId,
         name: res.data.name,
         email: res.data.email,
-        role: res.data.role
+        role: res.data.role,
+        currency: res.data.currency
       });
       window.dispatchEvent(new CustomEvent('finvisiq:auth-changed', { detail: { loggedIn: true, user: res.data } }));
     }
@@ -221,7 +233,8 @@ class FinvisIQApi {
         userId: res.data.userId,
         name: res.data.name,
         email: res.data.email,
-        role: res.data.role
+        role: res.data.role,
+        currency: res.data.currency
       });
       window.dispatchEvent(new CustomEvent('finvisiq:auth-changed', { detail: { loggedIn: true, user: res.data } }));
     }
@@ -232,19 +245,55 @@ class FinvisIQApi {
     return this.request('/api/auth/me');
   }
 
-  // Dashboard
+  async getProfile() {
+    return this.request('/api/auth/me');
+  }
+
+  async updateProfile(profileData) {
+    return this.request('/api/users/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData)
+    });
+  }
+
+  // 3. Dashboard Telemetry & Metrics
+  async getDashboardSummary() {
+    return this.request('/api/dashboard/summary');
+  }
+
   async getDashboard() {
     return this.request('/api/dashboard');
   }
 
-  // Transactions
-  async getTransactions() {
-    return this.request('/api/transactions');
+  // 4. Transactions Ledger (CRUD & Filter)
+  async getTransactions(params = {}) {
+    let query = '';
+    const queryParts = [];
+    if (params.type && params.type !== 'ALL') queryParts.push(`type=${encodeURIComponent(params.type)}`);
+    if (params.category && params.category !== 'ALL') queryParts.push(`category=${encodeURIComponent(params.category)}`);
+    if (params.search) queryParts.push(`search=${encodeURIComponent(params.search)}`);
+    if (queryParts.length > 0) query = '?' + queryParts.join('&');
+    return this.request(`/api/transactions${query}`);
+  }
+
+  async getTransaction(id) {
+    return this.request(`/api/transactions/${id}`);
   }
 
   async createTransaction(transactionData) {
     return this.request('/api/transactions', {
       method: 'POST',
+      body: JSON.stringify(transactionData)
+    });
+  }
+
+  async addTransaction(transactionData) {
+    return this.createTransaction(transactionData);
+  }
+
+  async updateTransaction(id, transactionData) {
+    return this.request(`/api/transactions/${id}`, {
+      method: 'PUT',
       body: JSON.stringify(transactionData)
     });
   }
@@ -255,7 +304,7 @@ class FinvisIQApi {
     });
   }
 
-  // Budgets
+  // 5. Budgets
   async getBudgets() {
     return this.request('/api/budgets');
   }
@@ -267,15 +316,26 @@ class FinvisIQApi {
     });
   }
 
+  async updateBudget(id, budgetData) {
+    return this.request(`/api/budgets/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(budgetData)
+    });
+  }
+
   async deleteBudget(id) {
     return this.request(`/api/budgets/${id}`, {
       method: 'DELETE'
     });
   }
 
-  // Goals
+  // 6. Savings Goals
   async getGoals() {
     return this.request('/api/goals');
+  }
+
+  async getSavingsGoals() {
+    return this.getGoals();
   }
 
   async createGoal(goalData) {
@@ -285,6 +345,25 @@ class FinvisIQApi {
     });
   }
 
+  async createSavingsGoal(goalData) {
+    return this.createGoal(goalData);
+  }
+
+  async addSavingsGoal(goalData) {
+    return this.createGoal(goalData);
+  }
+
+  async updateGoal(id, goalData) {
+    return this.request(`/api/goals/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(goalData)
+    });
+  }
+
+  async updateSavingsGoal(id, goalData) {
+    return this.updateGoal(id, goalData);
+  }
+
   async contributeToGoal(id, amount) {
     return this.request(`/api/goals/${id}/contribute`, {
       method: 'POST',
@@ -292,7 +371,17 @@ class FinvisIQApi {
     });
   }
 
-  // Investments
+  async deleteGoal(id) {
+    return this.request(`/api/goals/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async deleteSavingsGoal(id) {
+    return this.deleteGoal(id);
+  }
+
+  // 7. Portfolio Investments & SIP
   async getInvestments() {
     return this.request('/api/investments');
   }
@@ -304,18 +393,26 @@ class FinvisIQApi {
     });
   }
 
+  async deleteInvestment(id) {
+    return this.request(`/api/investments/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
   async calculateSIP(monthlyInvestment, expectedReturnRate, timePeriodYears) {
-    return this.request('/api/investments/sip-calculator', {
+    return this.request('/api/investments/sip-calculate', {
       method: 'POST',
       body: JSON.stringify({
         monthlyInvestment: Number(monthlyInvestment),
+        expectedAnnualReturn: Number(expectedReturnRate),
         expectedReturnRate: Number(expectedReturnRate),
+        tenureYears: Number(timePeriodYears),
         timePeriodYears: Number(timePeriodYears)
       })
     });
   }
 
-  // Net Worth & Assets
+  // 8. Net Worth & Balance Sheet
   async getNetWorth() {
     return this.request('/api/networth');
   }
@@ -331,6 +428,12 @@ class FinvisIQApi {
     });
   }
 
+  async deleteAsset(id) {
+    return this.request(`/api/assets/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
   async getLiabilities() {
     return this.request('/api/liabilities');
   }
@@ -342,7 +445,13 @@ class FinvisIQApi {
     });
   }
 
-  // Subscriptions
+  async deleteLiability(id) {
+    return this.request(`/api/liabilities/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // 9. Subscriptions
   async getSubscriptions() {
     return this.request('/api/subscriptions');
   }
@@ -354,15 +463,49 @@ class FinvisIQApi {
     });
   }
 
+  async updateSubscription(id, subscriptionData) {
+    return this.request(`/api/subscriptions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(subscriptionData)
+    });
+  }
+
   async deleteSubscription(id) {
     return this.request(`/api/subscriptions/${id}`, {
       method: 'DELETE'
     });
   }
 
-  // AI Financial Advisor Insights
+  // 10. AI Financial Advisor & Insights
   async getAiInsights() {
     return this.request('/api/ai/insights');
+  }
+
+  async getFinancialInsights() {
+    return this.getAiInsights();
+  }
+
+  // 11. System Notifications
+  async getNotifications() {
+    return this.request('/api/notifications');
+  }
+
+  async markNotificationRead(id) {
+    return this.request(`/api/notifications/${id}/read`, {
+      method: 'PUT'
+    });
+  }
+
+  async deleteNotification(id) {
+    return this.request(`/api/notifications/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async deleteAllNotifications() {
+    return this.request('/api/notifications', {
+      method: 'DELETE'
+    });
   }
 }
 

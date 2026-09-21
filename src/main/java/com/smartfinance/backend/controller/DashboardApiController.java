@@ -30,7 +30,7 @@ public class DashboardApiController {
     private final PredictionService predictionService = new PredictionService();
     private final NetWorthService netWorthService = new NetWorthService();
 
-    @GetMapping
+    @GetMapping({"", "/", "/summary"})
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboardSummary(@CurrentUser UserPrincipal principal) {
         int userId = principal.getUserId();
 

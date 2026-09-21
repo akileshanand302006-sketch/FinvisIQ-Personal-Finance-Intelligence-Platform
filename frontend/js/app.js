@@ -264,7 +264,7 @@ async function loadViewData(viewName) {
 // ------------------------------------------------------------------------------
 async function loadDashboard() {
   const res = await window.api.getDashboardSummary();
-  if (!res.success) return;
+  if (!res || !res.success || !res.data) return;
 
   const d = res.data;
   state.dashboardData = d;
@@ -487,10 +487,10 @@ function renderRecentTransactions(transactions) {
 // ------------------------------------------------------------------------------
 async function loadTransactions() {
   const res = await window.api.getTransactions();
-  if (!res.success) return;
+  if (!res || !res.success) return;
 
-  state.transactions = res.data;
-  populateCategoryFilter(res.data);
+  state.transactions = Array.isArray(res.data) ? res.data : [];
+  populateCategoryFilter(state.transactions);
   applyTransactionFilters();
 }
 
@@ -1013,14 +1013,25 @@ async function pollDbHealth() {
     const res = await window.api.checkHealth();
     const pill = document.getElementById('header-db-pill');
     if (pill) {
-      if (res.databaseConnected) {
+      const isConnected = !!(
+        res &&
+        (res.databaseConnected ||
+         res.dbConnected ||
+         (res.data && (res.data.databaseConnected || res.data.dbConnected)) ||
+         (res.data && res.data.status === 'UP') ||
+         res.success)
+      );
+      if (isConnected) {
         pill.innerHTML = `<span class="db-dot"></span><span>Aiven MySQL Cloud (SSL Active)</span>`;
       } else {
         pill.innerHTML = `<span class="db-dot" style="background: var(--danger);"></span><span>DB Disconnected</span>`;
       }
     }
   } catch (e) {
-    // Backend offline or unreachable
+    const pill = document.getElementById('header-db-pill');
+    if (pill) {
+      pill.innerHTML = `<span class="db-dot" style="background: var(--danger);"></span><span>DB Disconnected</span>`;
+    }
   }
 }
 

@@ -25,4 +25,16 @@ public class SIPCalculationRequest {
 
     public Integer getTenureYears() { return tenureYears; }
     public void setTenureYears(Integer tenureYears) { this.tenureYears = tenureYears; }
+
+    public void setExpectedReturnRate(Double rate) {
+        if (this.expectedAnnualReturn == null) {
+            this.expectedAnnualReturn = rate;
+        }
+    }
+
+    public void setTimePeriodYears(Integer years) {
+        if (this.tenureYears == null) {
+            this.tenureYears = years;
+        }
+    }
 }

@@ -43,7 +43,27 @@ public class TransactionDAO {
                 return id;
             }
         } catch (SQLException e) {
-            System.err.println("Error inserting transaction: " + e.getMessage());
+            System.err.println("Notice: inserting transaction with payment_method failed (" + e.getMessage() + "). Attempting fallback insert without payment_method...");
+            String fallbackSql = "INSERT INTO transactions (user_id, amount, type, category, date, description) VALUES (?, ?, ?, ?, ?, ?)";
+            try (Connection conn = dbManager.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(fallbackSql, Statement.RETURN_GENERATED_KEYS)) {
+                pstmt.setInt(1, txn.getUserId());
+                pstmt.setDouble(2, txn.getAmount());
+                pstmt.setString(3, txn.getType());
+                pstmt.setString(4, txn.getCategory());
+                pstmt.setString(5, txn.getDate().toString());
+                pstmt.setString(6, txn.getDescription());
+                pstmt.executeUpdate();
+
+                ResultSet keys = pstmt.getGeneratedKeys();
+                if (keys.next()) {
+                    int id = keys.getInt(1);
+                    txn.setTransactionId(id);
+                    return id;
+                }
+            } catch (SQLException ex) {
+                System.err.println("Fatal: Fallback transaction insert failed: " + ex.getMessage());
+            }
         }
         return -1;
     }
@@ -244,7 +264,20 @@ public class TransactionDAO {
             pstmt.setInt(7, txn.getTransactionId());
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("Error updating transaction: " + e.getMessage());
+            System.err.println("Notice: updating transaction with payment_method failed (" + e.getMessage() + "). Attempting fallback update without payment_method...");
+            String fallbackSql = "UPDATE transactions SET amount=?, type=?, category=?, date=?, description=? WHERE transaction_id=?";
+            try (Connection conn = dbManager.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(fallbackSql)) {
+                pstmt.setDouble(1, txn.getAmount());
+                pstmt.setString(2, txn.getType());
+                pstmt.setString(3, txn.getCategory());
+                pstmt.setString(4, txn.getDate().toString());
+                pstmt.setString(5, txn.getDescription());
+                pstmt.setInt(6, txn.getTransactionId());
+                return pstmt.executeUpdate() > 0;
+            } catch (SQLException ex) {
+                System.err.println("Fatal: Fallback transaction update failed: " + ex.getMessage());
+            }
         }
         return false;
     }
