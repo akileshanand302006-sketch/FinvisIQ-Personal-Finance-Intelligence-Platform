@@ -1,4 +1,4 @@
-# 💎 Finora — Personal-Finance-Intelligence-Platform
+# 💎 FinvisIQ — Personal-Finance-Intelligence-Platform
 
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 [![JavaFX](https://img.shields.io/badge/JavaFX-21.0.2-blue.svg)](https://openjfx.io/)
