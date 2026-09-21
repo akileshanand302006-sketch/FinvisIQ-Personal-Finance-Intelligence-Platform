@@ -1,10 +1,4 @@
-Yes. The conflict is caused by **two different README versions being merged**, and the pasted content also contains escaped/broken Markdown such as `**=======**`, `\|`, `\[` and malformed badge links.
 
-The cleanest solution is to **replace the entire `README.md` with one properly formatted version** rather than trying to merge the two versions line-by-line.
-
-Use the following as your complete `README.md`.
-
-````markdown
 # 💎 FinvisIQ — Personal Finance Intelligence Platform
 
 <p align="center">
@@ -787,4 +781,3 @@ Coimbatore Institute of Technology
 💎 **FinvisIQ — Intelligent Finance. Smarter Decisions.**
 
 </p>
-```
