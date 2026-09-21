@@ -28,7 +28,6 @@ public class TransactionController {
     private final MainController mainController;
     private final TransactionDAO transactionDAO;
     private TableView<Transaction> table;
-    private ObservableList<Transaction> tableData;
     private Label totalIncomeLabel, totalExpenseLabel, balLabel;
     private TextField searchField;
     private ComboBox<String> filterCombo;
@@ -202,8 +201,14 @@ public class TransactionController {
     }
 
     private HBox createSummaryBar() {
-        double income = allTransactions.stream().filter(t -> t != null && t.isIncome()).mapToDouble(Transaction::getAmount).sum();
-        double expenses = allTransactions.stream().filter(t -> t != null && t.isExpense()).mapToDouble(Transaction::getAmount).sum();
+        double income = 0.0;
+        double expenses = 0.0;
+        for (Transaction t : allTransactions) {
+            if (t != null) {
+                if (t.isIncome()) income += t.getAmount();
+                else if (t.isExpense()) expenses += t.getAmount();
+            }
+        }
 
         totalIncomeLabel = new Label("Income: " + ValidationUtils.formatCurrency(income));
         totalIncomeLabel.getStyleClass().add("income-text");
@@ -329,8 +334,14 @@ public class TransactionController {
     }
 
     private void refreshSummary() {
-        double income = allTransactions.stream().filter(t -> t != null && t.isIncome()).mapToDouble(Transaction::getAmount).sum();
-        double expenses = allTransactions.stream().filter(t -> t != null && t.isExpense()).mapToDouble(Transaction::getAmount).sum();
+        double income = 0.0;
+        double expenses = 0.0;
+        for (Transaction t : allTransactions) {
+            if (t != null) {
+                if (t.isIncome()) income += t.getAmount();
+                else if (t.isExpense()) expenses += t.getAmount();
+            }
+        }
         if (totalIncomeLabel != null) totalIncomeLabel.setText("Income: " + ValidationUtils.formatCurrency(income));
         if (totalExpenseLabel != null) totalExpenseLabel.setText("Expenses: " + ValidationUtils.formatCurrency(expenses));
         if (balLabel != null) balLabel.setText("Balance: " + ValidationUtils.formatCurrency(income - expenses));

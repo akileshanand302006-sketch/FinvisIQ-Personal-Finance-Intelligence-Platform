@@ -39,7 +39,12 @@ public class FinancialHealthService {
 
     public int calculateHealthScore(Map<String, Double> breakdown) {
         if (breakdown == null || breakdown.isEmpty()) return 50;
-        double sum = breakdown.values().stream().mapToDouble(Double::doubleValue).sum();
+        double sum = 0.0;
+        for (Double val : breakdown.values()) {
+            if (val != null) {
+                sum += val;
+            }
+        }
         return Math.min(100, Math.max(0, (int) Math.round(sum)));
     }
 

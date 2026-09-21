@@ -47,11 +47,12 @@ class FinvisIQApi {
       }
     }
 
-    // 2. Production VITE_API_BASE_URL (safely guarded against non-module script tag syntax errors)
+    // 2. Production VITE_API_BASE_URL (safely evaluated dynamically to avoid non-module syntax errors)
     try {
-      if (typeof import !== 'undefined' && import.meta && import.meta.env && import.meta.env.VITE_API_BASE_URL) {
-        const viteUrl = sanitizeUrl(import.meta.env.VITE_API_BASE_URL);
-        if (viteUrl) return viteUrl;
+      const getViteEnv = new Function('try { return import.meta.env.VITE_API_BASE_URL; } catch(e) { return null; }');
+      const viteUrl = getViteEnv();
+      if (viteUrl) {
+        return sanitizeUrl(viteUrl);
       }
     } catch (ignore) {}
 
