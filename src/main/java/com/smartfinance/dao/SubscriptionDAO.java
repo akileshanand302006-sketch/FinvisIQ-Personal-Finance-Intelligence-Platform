@@ -63,6 +63,15 @@ public class SubscriptionDAO {
     }
 
     public Subscription findById(int subscriptionId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            com.smartfinance.model.User user = com.smartfinance.api.ApiClient.getInstance().getAuthenticatedUser();
+            if (user != null) {
+                for (Subscription s : findByUserId(user.getUserId())) {
+                    if (s.getSubscriptionId() == subscriptionId) return s;
+                }
+            }
+            return null;
+        }
         String sql = "SELECT * FROM subscriptions WHERE subscription_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -78,6 +87,9 @@ public class SubscriptionDAO {
     }
 
     public boolean update(Subscription sub) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().updateSubscription(sub);
+        }
         String sql = "UPDATE subscriptions SET service_name=?, amount=?, billing_cycle=?, next_billing_date=?, category=?, status=? WHERE subscription_id=?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

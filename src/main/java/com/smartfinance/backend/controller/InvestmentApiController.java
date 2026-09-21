@@ -81,6 +81,42 @@ public class InvestmentApiController {
         return ResponseEntity.ok(ApiResponse.success("Investment deleted successfully", null));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<Investment>> updateInvestment(
+            @CurrentUser UserPrincipal principal,
+            @PathVariable("id") int id,
+            @Valid @RequestBody InvestmentRequest request) {
+
+        Investment existing = investmentDAO.findById(id);
+        if (existing == null || existing.getUserId() != principal.getUserId()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error("Investment not found", 404));
+        }
+
+        if (request.getType() != null && !request.getType().isBlank()) {
+            existing.setType(request.getType().trim());
+        }
+        if (request.getAmount() != null) {
+            existing.setAmount(request.getAmount());
+        }
+        if (request.getReturnRate() != null) {
+            existing.setReturnRate(request.getReturnRate());
+        }
+        if (request.getStartDate() != null && !request.getStartDate().isBlank()) {
+            try {
+                existing.setStartDate(LocalDate.parse(request.getStartDate().trim()));
+            } catch (Exception ignore) {}
+        }
+
+        boolean ok = investmentDAO.update(existing);
+        if (!ok) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Failed to update investment", 500));
+        }
+
+        return ResponseEntity.ok(ApiResponse.success("Investment updated successfully", existing));
+    }
+
     @PostMapping({"/sip-calculate", "/sip-calculator"})
     public ResponseEntity<ApiResponse<SIPCalculationResponse>> calculateSIP(
             @Valid @RequestBody SIPCalculationRequest request) {

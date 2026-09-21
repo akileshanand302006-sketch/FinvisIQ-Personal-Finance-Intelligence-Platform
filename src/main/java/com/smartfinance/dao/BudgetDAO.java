@@ -62,6 +62,15 @@ public class BudgetDAO {
     }
 
     public Budget findById(int budgetId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            com.smartfinance.model.User user = com.smartfinance.api.ApiClient.getInstance().getAuthenticatedUser();
+            if (user != null) {
+                for (Budget b : findByUserId(user.getUserId())) {
+                    if (b.getBudgetId() == budgetId) return b;
+                }
+            }
+            return null;
+        }
         String sql = "SELECT * FROM budgets WHERE budget_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -77,6 +86,9 @@ public class BudgetDAO {
     }
 
     public boolean update(Budget budget) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().updateBudget(budget);
+        }
         String sql = "UPDATE budgets SET budget_amount=?, period=?, warning_threshold=? WHERE budget_id=?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

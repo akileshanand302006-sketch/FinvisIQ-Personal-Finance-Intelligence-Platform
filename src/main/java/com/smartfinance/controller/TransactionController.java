@@ -32,6 +32,7 @@ public class TransactionController {
     private Label totalIncomeLabel, totalExpenseLabel, balLabel;
     private TextField searchField;
     private ComboBox<String> filterCombo;
+    private final ArrayList<Transaction> allTransactions = new ArrayList<>();
 
     private static final String[] EXPENSE_CATEGORIES = {
         "Food & Dining", "Transportation", "Shopping", "Entertainment",
@@ -57,6 +58,10 @@ public class TransactionController {
         Label subtitle = new Label("Track and manage your income & expenses");
         subtitle.getStyleClass().add("page-subtitle");
 
+        // Load transactions once
+        allTransactions.clear();
+        allTransactions.addAll(transactionDAO.findByUserId(currentUser.getUserId()));
+
         // Add transaction form
         VBox formCard = createAddForm();
 
@@ -70,7 +75,6 @@ public class TransactionController {
         VBox tableCard = createTableCard();
 
         root.getChildren().addAll(title, subtitle, formCard, summaryBar, filterBar, tableCard);
-        javafx.application.Platform.runLater(() -> AnimationUtils.staggerChildren(root, 60));
         return root;
     }
 
@@ -198,8 +202,8 @@ public class TransactionController {
     }
 
     private HBox createSummaryBar() {
-        double income = transactionDAO.getTotalIncome(currentUser.getUserId());
-        double expenses = transactionDAO.getTotalExpenses(currentUser.getUserId());
+        double income = allTransactions.stream().filter(t -> t != null && t.isIncome()).mapToDouble(Transaction::getAmount).sum();
+        double expenses = allTransactions.stream().filter(t -> t != null && t.isExpense()).mapToDouble(Transaction::getAmount).sum();
 
         totalIncomeLabel = new Label("Income: " + ValidationUtils.formatCurrency(income));
         totalIncomeLabel.getStyleClass().add("income-text");
@@ -308,41 +312,41 @@ public class TransactionController {
         table.setPrefHeight(350);
         table.setPlaceholder(new Label("No transactions found"));
 
-        refreshTable();
+        table.setItems(FXCollections.observableArrayList(allTransactions));
 
         card.getChildren().add(table);
         return card;
     }
 
     private void refreshTable() {
+        allTransactions.clear();
+        allTransactions.addAll(transactionDAO.findByUserId(currentUser.getUserId()));
         if (searchField != null && filterCombo != null) {
             applyFilter(searchField.getText(), filterCombo.getValue());
-        } else {
-            ArrayList<Transaction> transactions = transactionDAO.findByUserId(currentUser.getUserId());
-            tableData = FXCollections.observableArrayList(transactions);
-            table.setItems(tableData);
+        } else if (table != null) {
+            table.setItems(FXCollections.observableArrayList(allTransactions));
         }
     }
 
     private void refreshSummary() {
-        double income = transactionDAO.getTotalIncome(currentUser.getUserId());
-        double expenses = transactionDAO.getTotalExpenses(currentUser.getUserId());
+        double income = allTransactions.stream().filter(t -> t != null && t.isIncome()).mapToDouble(Transaction::getAmount).sum();
+        double expenses = allTransactions.stream().filter(t -> t != null && t.isExpense()).mapToDouble(Transaction::getAmount).sum();
         if (totalIncomeLabel != null) totalIncomeLabel.setText("Income: " + ValidationUtils.formatCurrency(income));
         if (totalExpenseLabel != null) totalExpenseLabel.setText("Expenses: " + ValidationUtils.formatCurrency(expenses));
         if (balLabel != null) balLabel.setText("Balance: " + ValidationUtils.formatCurrency(income - expenses));
     }
 
     private void applyFilter(String searchText, String typeFilter) {
-        ArrayList<Transaction> all = transactionDAO.findByUserId(currentUser.getUserId());
         ArrayList<Transaction> filtered = new ArrayList<>();
 
-        for (Transaction txn : all) {
-            boolean matchesType = typeFilter.equals("All") ||
+        for (Transaction txn : allTransactions) {
+            if (txn == null) continue;
+            boolean matchesType = typeFilter == null || typeFilter.equals("All") ||
                 (typeFilter.equals("Income") && txn.isIncome()) ||
                 (typeFilter.equals("Expense") && txn.isExpense());
 
             boolean matchesSearch = searchText == null || searchText.isBlank() ||
-                txn.getCategory().toLowerCase().contains(searchText.toLowerCase()) ||
+                (txn.getCategory() != null && txn.getCategory().toLowerCase().contains(searchText.toLowerCase())) ||
                 (txn.getDescription() != null && txn.getDescription().toLowerCase().contains(searchText.toLowerCase()));
 
             if (matchesType && matchesSearch) {
@@ -350,6 +354,8 @@ public class TransactionController {
             }
         }
 
-        table.setItems(FXCollections.observableArrayList(filtered));
+        if (table != null) {
+            table.setItems(FXCollections.observableArrayList(filtered));
+        }
     }
 }

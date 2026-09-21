@@ -90,6 +90,15 @@ public class TransactionDAO {
 
     /** Find a transaction by id. */
     public Transaction findById(int transactionId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            com.smartfinance.model.User user = com.smartfinance.api.ApiClient.getInstance().getAuthenticatedUser();
+            if (user != null) {
+                for (Transaction t : findByUserId(user.getUserId())) {
+                    if (t.getTransactionId() == transactionId) return t;
+                }
+            }
+            return null;
+        }
         String sql = "SELECT * FROM transactions WHERE transaction_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -252,6 +261,9 @@ public class TransactionDAO {
 
     /** Update a transaction. */
     public boolean update(Transaction txn) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().updateTransaction(txn);
+        }
         String sql = "UPDATE transactions SET amount=?, type=?, category=?, date=?, description=?, payment_method=? WHERE transaction_id=?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -284,6 +296,9 @@ public class TransactionDAO {
 
     /** Get transaction count for a user. */
     public int getTransactionCount(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return findByUserId(userId).size();
+        }
         String sql = "SELECT COUNT(*) FROM transactions WHERE user_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

@@ -24,6 +24,11 @@ public class DemoDataService {
     }
 
     public void seedDemoData(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            // In cloud client mode, user data is securely persisted in Aiven MySQL.
+            // Avoid making 5 redundant, synchronous network roundtrips on every dashboard open.
+            return;
+        }
         // Sample transactions
         if (transactionDAO.findByUserId(userId).isEmpty()) {
             transactionDAO.insert(new Transaction(userId, 85000, "INCOME", "Salary", LocalDate.now().minusDays(15), "Monthly Salary", "Bank Transfer"));

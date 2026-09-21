@@ -62,6 +62,15 @@ public class InvestmentDAO {
     }
 
     public Investment findById(int investmentId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            com.smartfinance.model.User user = com.smartfinance.api.ApiClient.getInstance().getAuthenticatedUser();
+            if (user != null) {
+                for (Investment inv : findByUserId(user.getUserId())) {
+                    if (inv.getInvestmentId() == investmentId) return inv;
+                }
+            }
+            return null;
+        }
         String sql = "SELECT * FROM investments WHERE investment_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -135,6 +144,9 @@ public class InvestmentDAO {
     }
 
     public boolean update(Investment inv) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().updateInvestment(inv);
+        }
         String sql = "UPDATE investments SET type=?, amount=?, return_rate=?, start_date=? WHERE investment_id=?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

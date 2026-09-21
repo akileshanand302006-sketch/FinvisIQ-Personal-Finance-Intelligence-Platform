@@ -9,6 +9,33 @@
     -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
     -fx-font-size: 14px;
     -fx-background-color: #F1F5F9;
+    -fx-text-fill: #0F172A;
+}
+
+.label {
+    -fx-text-fill: #0F172A;
+}
+
+.radio-button {
+    -fx-text-fill: #0F172A;
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 600;
+}
+
+.radio-button .text {
+    -fx-fill: #0F172A;
+}
+
+.radio-button .radio {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-border-width: 1.5;
+}
+
+.radio-button:selected .radio .dot {
+    -fx-background-color: #7C3AED;
 }
 
 .app-root {

@@ -13,11 +13,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * High-Performance REST API Client for FinvisIQ Desktop.
  * Communicates securely with the Railway Spring Boot Backend over HTTPS.
  * Stores JWT authentication tokens in-memory and deserializes responses into typed domain models.
+ * Features fast in-memory caching to eliminate redundant network roundtrips on the JavaFX UI thread.
  */
 public class ApiClient {
 
@@ -27,6 +29,29 @@ public class ApiClient {
     private final ObjectMapper objectMapper;
     private String authToken = null;
     private User authenticatedUser = null;
+
+    // Cache structure with TTL
+    private static class CacheEntry<T> {
+        final T data;
+        final long expiresAt;
+
+        CacheEntry(T data, long ttlMillis) {
+            this.data = data;
+            this.expiresAt = System.currentTimeMillis() + ttlMillis;
+        }
+
+        boolean isValid() {
+            return System.currentTimeMillis() < expiresAt;
+        }
+    }
+
+    private final Map<Integer, CacheEntry<ArrayList<Transaction>>> transactionsCache = new ConcurrentHashMap<>();
+    private final Map<Integer, CacheEntry<ArrayList<Budget>>> budgetsCache = new ConcurrentHashMap<>();
+    private final Map<Integer, CacheEntry<ArrayList<Goal>>> goalsCache = new ConcurrentHashMap<>();
+    private final Map<Integer, CacheEntry<ArrayList<Investment>>> investmentsCache = new ConcurrentHashMap<>();
+    private final Map<Integer, CacheEntry<ArrayList<Subscription>>> subscriptionsCache = new ConcurrentHashMap<>();
+    private final Map<Integer, CacheEntry<ArrayList<Notification>>> notificationsCache = new ConcurrentHashMap<>();
+    private static final long DEFAULT_TTL_MS = 10_000L; // 10 seconds TTL
 
     private ApiClient() {
         this.httpClient = HttpClient.newBuilder()
@@ -60,9 +85,23 @@ public class ApiClient {
         return authenticatedUser;
     }
 
+    public void invalidateAllCaches() {
+        transactionsCache.clear();
+        budgetsCache.clear();
+        goalsCache.clear();
+        investmentsCache.clear();
+        subscriptionsCache.clear();
+        notificationsCache.clear();
+    }
+
+    public void invalidateTransactionsCache() {
+        transactionsCache.clear();
+    }
+
     public void logout() {
         this.authToken = null;
         this.authenticatedUser = null;
+        invalidateAllCaches();
     }
 
     public boolean isLoggedIn() {
@@ -140,6 +179,10 @@ public class ApiClient {
     // =========================================================================
 
     public ArrayList<Transaction> getTransactions(int userId) {
+        CacheEntry<ArrayList<Transaction>> cached = transactionsCache.get(userId);
+        if (cached != null && cached.isValid()) {
+            return new ArrayList<>(cached.data);
+        }
         try {
             HttpResponse<String> response = sendRequest("GET", "/api/transactions", null, true);
             if (response.statusCode() == 200) {
@@ -147,7 +190,9 @@ public class ApiClient {
                 JsonNode data = root.path("data");
                 if (data.isArray()) {
                     List<Transaction> list = objectMapper.readerFor(new TypeReference<List<Transaction>>() {}).readValue(data);
-                    return new ArrayList<>(list);
+                    ArrayList<Transaction> result = new ArrayList<>(list);
+                    transactionsCache.put(userId, new CacheEntry<>(result, DEFAULT_TTL_MS));
+                    return new ArrayList<>(result);
                 }
             }
         } catch (Exception e) {
@@ -167,6 +212,7 @@ public class ApiClient {
             payload.put("paymentMethod", txn.getPaymentMethod());
 
             HttpResponse<String> response = sendRequest("POST", "/api/transactions", payload, true);
+            transactionsCache.clear();
             if (response.statusCode() == 200 || response.statusCode() == 201) {
                 JsonNode root = objectMapper.readTree(response.body());
                 return root.path("data").path("transactionId").asInt(1);
@@ -177,9 +223,29 @@ public class ApiClient {
         return 0;
     }
 
+    public boolean updateTransaction(Transaction txn) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("amount", txn.getAmount());
+            payload.put("type", txn.getType());
+            payload.put("category", txn.getCategory());
+            payload.put("date", txn.getDate() != null ? txn.getDate().toString() : null);
+            payload.put("description", txn.getDescription());
+            payload.put("paymentMethod", txn.getPaymentMethod());
+
+            HttpResponse<String> response = sendRequest("PUT", "/api/transactions/" + txn.getTransactionId(), payload, true);
+            transactionsCache.clear();
+            return response.statusCode() == 200 || response.statusCode() == 204;
+        } catch (Exception e) {
+            System.err.println("[FinvisIQ API] Update transaction failed: " + e.getMessage());
+            return false;
+        }
+    }
+
     public boolean deleteTransaction(int id) {
         try {
             HttpResponse<String> response = sendRequest("DELETE", "/api/transactions/" + id, null, true);
+            transactionsCache.clear();
             return response.statusCode() == 200 || response.statusCode() == 204;
         } catch (Exception e) {
             System.err.println("[FinvisIQ API] Delete transaction failed: " + e.getMessage());
@@ -192,6 +258,10 @@ public class ApiClient {
     // =========================================================================
 
     public ArrayList<Budget> getBudgets(int userId) {
+        CacheEntry<ArrayList<Budget>> cached = budgetsCache.get(userId);
+        if (cached != null && cached.isValid()) {
+            return new ArrayList<>(cached.data);
+        }
         try {
             HttpResponse<String> response = sendRequest("GET", "/api/budgets", null, true);
             if (response.statusCode() == 200) {
@@ -199,7 +269,9 @@ public class ApiClient {
                 JsonNode data = root.path("data");
                 if (data.isArray()) {
                     List<Budget> list = objectMapper.readerFor(new TypeReference<List<Budget>>() {}).readValue(data);
-                    return new ArrayList<>(list);
+                    ArrayList<Budget> result = new ArrayList<>(list);
+                    budgetsCache.put(userId, new CacheEntry<>(result, DEFAULT_TTL_MS));
+                    return new ArrayList<>(result);
                 }
             }
         } catch (Exception e) {
@@ -217,6 +289,7 @@ public class ApiClient {
             payload.put("warningThreshold", budget.getWarningThreshold());
 
             HttpResponse<String> response = sendRequest("POST", "/api/budgets", payload, true);
+            budgetsCache.clear();
             if (response.statusCode() == 200 || response.statusCode() == 201) {
                 JsonNode root = objectMapper.readTree(response.body());
                 return root.path("data").path("budgetId").asInt(1);
@@ -227,9 +300,27 @@ public class ApiClient {
         return 0;
     }
 
+    public boolean updateBudget(Budget budget) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("category", budget.getCategory());
+            payload.put("budgetAmount", budget.getBudgetAmount());
+            payload.put("period", budget.getPeriod());
+            payload.put("warningThreshold", budget.getWarningThreshold());
+
+            HttpResponse<String> response = sendRequest("PUT", "/api/budgets/" + budget.getBudgetId(), payload, true);
+            budgetsCache.clear();
+            return response.statusCode() == 200 || response.statusCode() == 204;
+        } catch (Exception e) {
+            System.err.println("[FinvisIQ API] Update budget failed: " + e.getMessage());
+            return false;
+        }
+    }
+
     public boolean deleteBudget(int id) {
         try {
             HttpResponse<String> response = sendRequest("DELETE", "/api/budgets/" + id, null, true);
+            budgetsCache.clear();
             return response.statusCode() == 200 || response.statusCode() == 204;
         } catch (Exception e) {
             System.err.println("[FinvisIQ API] Delete budget failed: " + e.getMessage());
@@ -242,6 +333,10 @@ public class ApiClient {
     // =========================================================================
 
     public ArrayList<Goal> getGoals(int userId) {
+        CacheEntry<ArrayList<Goal>> cached = goalsCache.get(userId);
+        if (cached != null && cached.isValid()) {
+            return new ArrayList<>(cached.data);
+        }
         try {
             HttpResponse<String> response = sendRequest("GET", "/api/goals", null, true);
             if (response.statusCode() == 200) {
@@ -249,7 +344,9 @@ public class ApiClient {
                 JsonNode data = root.path("data");
                 if (data.isArray()) {
                     List<Goal> list = objectMapper.readerFor(new TypeReference<List<Goal>>() {}).readValue(data);
-                    return new ArrayList<>(list);
+                    ArrayList<Goal> result = new ArrayList<>(list);
+                    goalsCache.put(userId, new CacheEntry<>(result, DEFAULT_TTL_MS));
+                    return new ArrayList<>(result);
                 }
             }
         } catch (Exception e) {
@@ -271,6 +368,7 @@ public class ApiClient {
             payload.put("expectedReturn", goal.getExpectedReturn());
 
             HttpResponse<String> response = sendRequest("POST", "/api/goals", payload, true);
+            goalsCache.clear();
             if (response.statusCode() == 200 || response.statusCode() == 201) {
                 JsonNode root = objectMapper.readTree(response.body());
                 return root.path("data").path("goalId").asInt(1);
@@ -281,10 +379,32 @@ public class ApiClient {
         return 0;
     }
 
+    public boolean updateGoal(Goal goal) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("goalName", goal.getGoalName());
+            payload.put("targetAmount", goal.getTargetAmount());
+            payload.put("savedAmount", goal.getSavedAmount());
+            payload.put("deadline", goal.getDeadline() != null ? goal.getDeadline().toString() : null);
+            payload.put("priority", goal.getPriority());
+            payload.put("category", goal.getCategory());
+            payload.put("monthlyContribution", goal.getMonthlyContribution());
+            payload.put("expectedReturn", goal.getExpectedReturn());
+
+            HttpResponse<String> response = sendRequest("PUT", "/api/goals/" + goal.getGoalId(), payload, true);
+            goalsCache.clear();
+            return response.statusCode() == 200 || response.statusCode() == 204;
+        } catch (Exception e) {
+            System.err.println("[FinvisIQ API] Update goal failed: " + e.getMessage());
+            return false;
+        }
+    }
+
     public boolean contributeGoal(int id, double amount) {
         try {
             Map<String, Object> payload = Map.of("amount", amount);
             HttpResponse<String> response = sendRequest("POST", "/api/goals/" + id + "/contribute", payload, true);
+            goalsCache.clear();
             return response.statusCode() == 200;
         } catch (Exception e) {
             System.err.println("[FinvisIQ API] Contribute to goal failed: " + e.getMessage());
@@ -295,6 +415,7 @@ public class ApiClient {
     public boolean deleteGoal(int id) {
         try {
             HttpResponse<String> response = sendRequest("DELETE", "/api/goals/" + id, null, true);
+            goalsCache.clear();
             return response.statusCode() == 200 || response.statusCode() == 204;
         } catch (Exception e) {
             System.err.println("[FinvisIQ API] Delete goal failed: " + e.getMessage());
@@ -307,6 +428,10 @@ public class ApiClient {
     // =========================================================================
 
     public ArrayList<Investment> getInvestments(int userId) {
+        CacheEntry<ArrayList<Investment>> cached = investmentsCache.get(userId);
+        if (cached != null && cached.isValid()) {
+            return new ArrayList<>(cached.data);
+        }
         try {
             HttpResponse<String> response = sendRequest("GET", "/api/investments", null, true);
             if (response.statusCode() == 200) {
@@ -314,7 +439,9 @@ public class ApiClient {
                 JsonNode data = root.path("data");
                 if (data.isArray()) {
                     List<Investment> list = objectMapper.readerFor(new TypeReference<List<Investment>>() {}).readValue(data);
-                    return new ArrayList<>(list);
+                    ArrayList<Investment> result = new ArrayList<>(list);
+                    investmentsCache.put(userId, new CacheEntry<>(result, DEFAULT_TTL_MS));
+                    return new ArrayList<>(result);
                 }
             }
         } catch (Exception e) {
@@ -332,6 +459,7 @@ public class ApiClient {
             payload.put("startDate", inv.getStartDate() != null ? inv.getStartDate().toString() : null);
 
             HttpResponse<String> response = sendRequest("POST", "/api/investments", payload, true);
+            investmentsCache.clear();
             if (response.statusCode() == 200 || response.statusCode() == 201) {
                 JsonNode root = objectMapper.readTree(response.body());
                 return root.path("data").path("investmentId").asInt(1);
@@ -342,9 +470,27 @@ public class ApiClient {
         return 0;
     }
 
+    public boolean updateInvestment(Investment inv) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("type", inv.getType());
+            payload.put("amount", inv.getAmount());
+            payload.put("returnRate", inv.getReturnRate());
+            payload.put("startDate", inv.getStartDate() != null ? inv.getStartDate().toString() : null);
+
+            HttpResponse<String> response = sendRequest("PUT", "/api/investments/" + inv.getInvestmentId(), payload, true);
+            investmentsCache.clear();
+            return response.statusCode() == 200 || response.statusCode() == 204;
+        } catch (Exception e) {
+            System.err.println("[FinvisIQ API] Update investment failed: " + e.getMessage());
+            return false;
+        }
+    }
+
     public boolean deleteInvestment(int id) {
         try {
             HttpResponse<String> response = sendRequest("DELETE", "/api/investments/" + id, null, true);
+            investmentsCache.clear();
             return response.statusCode() == 200 || response.statusCode() == 204;
         } catch (Exception e) {
             System.err.println("[FinvisIQ API] Delete investment failed: " + e.getMessage());
@@ -357,6 +503,10 @@ public class ApiClient {
     // =========================================================================
 
     public ArrayList<Subscription> getSubscriptions(int userId) {
+        CacheEntry<ArrayList<Subscription>> cached = subscriptionsCache.get(userId);
+        if (cached != null && cached.isValid()) {
+            return new ArrayList<>(cached.data);
+        }
         try {
             HttpResponse<String> response = sendRequest("GET", "/api/subscriptions", null, true);
             if (response.statusCode() == 200) {
@@ -364,7 +514,9 @@ public class ApiClient {
                 JsonNode data = root.path("data");
                 if (data.isArray()) {
                     List<Subscription> list = objectMapper.readerFor(new TypeReference<List<Subscription>>() {}).readValue(data);
-                    return new ArrayList<>(list);
+                    ArrayList<Subscription> result = new ArrayList<>(list);
+                    subscriptionsCache.put(userId, new CacheEntry<>(result, DEFAULT_TTL_MS));
+                    return new ArrayList<>(result);
                 }
             }
         } catch (Exception e) {
@@ -383,6 +535,7 @@ public class ApiClient {
             payload.put("category", sub.getCategory());
 
             HttpResponse<String> response = sendRequest("POST", "/api/subscriptions", payload, true);
+            subscriptionsCache.clear();
             if (response.statusCode() == 200 || response.statusCode() == 201) {
                 JsonNode root = objectMapper.readTree(response.body());
                 return root.path("data").path("subscriptionId").asInt(1);
@@ -393,9 +546,29 @@ public class ApiClient {
         return 0;
     }
 
+    public boolean updateSubscription(Subscription sub) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("serviceName", sub.getServiceName());
+            payload.put("amount", sub.getAmount());
+            payload.put("billingCycle", sub.getBillingCycle());
+            payload.put("nextBillingDate", sub.getNextBillingDate() != null ? sub.getNextBillingDate().toString() : null);
+            payload.put("category", sub.getCategory());
+            payload.put("status", sub.getStatus());
+
+            HttpResponse<String> response = sendRequest("PUT", "/api/subscriptions/" + sub.getSubscriptionId(), payload, true);
+            subscriptionsCache.clear();
+            return response.statusCode() == 200 || response.statusCode() == 204;
+        } catch (Exception e) {
+            System.err.println("[FinvisIQ API] Update subscription failed: " + e.getMessage());
+            return false;
+        }
+    }
+
     public boolean deleteSubscription(int id) {
         try {
             HttpResponse<String> response = sendRequest("DELETE", "/api/subscriptions/" + id, null, true);
+            subscriptionsCache.clear();
             return response.statusCode() == 200 || response.statusCode() == 204;
         } catch (Exception e) {
             System.err.println("[FinvisIQ API] Delete subscription failed: " + e.getMessage());
@@ -505,6 +678,10 @@ public class ApiClient {
     // =========================================================================
 
     public ArrayList<Notification> getNotifications(int userId) {
+        CacheEntry<ArrayList<Notification>> cached = notificationsCache.get(userId);
+        if (cached != null && cached.isValid()) {
+            return new ArrayList<>(cached.data);
+        }
         try {
             HttpResponse<String> response = sendRequest("GET", "/api/notifications", null, true);
             if (response.statusCode() == 200) {
@@ -512,7 +689,9 @@ public class ApiClient {
                 JsonNode data = root.path("data");
                 if (data.isArray()) {
                     List<Notification> list = objectMapper.readerFor(new TypeReference<List<Notification>>() {}).readValue(data);
-                    return new ArrayList<>(list);
+                    ArrayList<Notification> result = new ArrayList<>(list);
+                    notificationsCache.put(userId, new CacheEntry<>(result, DEFAULT_TTL_MS));
+                    return new ArrayList<>(result);
                 }
             }
         } catch (Exception e) {
@@ -524,6 +703,7 @@ public class ApiClient {
     public boolean markNotificationAsRead(int id) {
         try {
             HttpResponse<String> response = sendRequest("PUT", "/api/notifications/" + id + "/read", null, true);
+            notificationsCache.clear();
             return response.statusCode() == 200;
         } catch (Exception e) {
             return false;
@@ -533,6 +713,7 @@ public class ApiClient {
     public boolean deleteNotification(int id) {
         try {
             HttpResponse<String> response = sendRequest("DELETE", "/api/notifications/" + id, null, true);
+            notificationsCache.clear();
             return response.statusCode() == 200 || response.statusCode() == 204;
         } catch (Exception e) {
             return false;

@@ -12,13 +12,14 @@ import javafx.util.Duration;
  */
 public class AnimationUtils {
 
-    /** Fade in a node with smooth ease-out. */
+    /** Fade in a node with smooth ease-out and ensure 100% opacity upon completion. */
     public static void fadeIn(Node node, double durationMs) {
-        node.setOpacity(0);
+        if (node == null) return;
         FadeTransition ft = new FadeTransition(Duration.millis(durationMs), node);
-        ft.setFromValue(0);
-        ft.setToValue(1);
+        ft.setFromValue(0.3);
+        ft.setToValue(1.0);
         ft.setInterpolator(Interpolator.EASE_OUT);
+        ft.setOnFinished(e -> node.setOpacity(1.0));
         ft.play();
     }
 
@@ -191,26 +192,30 @@ public class AnimationUtils {
         pt.play();
     }
 
-    /** Staggered entrance for children of a container. */
+    /** Staggered entrance for children of a container with guaranteed 100% final opacity. */
     public static void staggerChildren(javafx.scene.layout.Pane parent, double delayBetween) {
+        if (parent == null || parent.getChildren().isEmpty()) return;
         for (int i = 0; i < parent.getChildren().size(); i++) {
             Node child = parent.getChildren().get(i);
-            child.setOpacity(0);
-            child.setTranslateY(20);
+            child.setOpacity(1.0);
 
-            TranslateTransition tt = new TranslateTransition(Duration.millis(350), child);
-            tt.setFromY(20);
+            TranslateTransition tt = new TranslateTransition(Duration.millis(250), child);
+            tt.setFromY(12);
             tt.setToY(0);
-            tt.setDelay(Duration.millis(i * delayBetween));
+            tt.setDelay(Duration.millis(Math.min(i * delayBetween, 180)));
             tt.setInterpolator(Interpolator.EASE_OUT);
 
-            FadeTransition ft = new FadeTransition(Duration.millis(300), child);
-            ft.setFromValue(0);
-            ft.setToValue(1);
-            ft.setDelay(Duration.millis(i * delayBetween));
+            FadeTransition ft = new FadeTransition(Duration.millis(250), child);
+            ft.setFromValue(0.5);
+            ft.setToValue(1.0);
+            ft.setDelay(Duration.millis(Math.min(i * delayBetween, 180)));
             ft.setInterpolator(Interpolator.EASE_OUT);
 
             ParallelTransition pt = new ParallelTransition(tt, ft);
+            pt.setOnFinished(e -> {
+                child.setOpacity(1.0);
+                child.setTranslateY(0);
+            });
             pt.play();
         }
     }

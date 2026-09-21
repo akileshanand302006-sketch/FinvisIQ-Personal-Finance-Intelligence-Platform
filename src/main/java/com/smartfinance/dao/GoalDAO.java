@@ -67,6 +67,15 @@ public class GoalDAO {
     }
 
     public Goal findById(int goalId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            com.smartfinance.model.User user = com.smartfinance.api.ApiClient.getInstance().getAuthenticatedUser();
+            if (user != null) {
+                for (Goal g : findByUserId(user.getUserId())) {
+                    if (g.getGoalId() == goalId) return g;
+                }
+            }
+            return null;
+        }
         String sql = "SELECT * FROM goals WHERE goal_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -82,6 +91,9 @@ public class GoalDAO {
     }
 
     public boolean update(Goal goal) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().updateGoal(goal);
+        }
         String sql = "UPDATE goals SET goal_name=?, target_amount=?, saved_amount=?, deadline=?, status=?, priority=?, category=?, monthly_contribution=?, expected_return=? WHERE goal_id=?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -134,6 +146,9 @@ public class GoalDAO {
     }
 
     public int getActiveGoalCount(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return (int) findByUserId(userId).stream().filter(g -> g != null && "ACTIVE".equalsIgnoreCase(g.getStatus())).count();
+        }
         String sql = "SELECT COUNT(*) FROM goals WHERE user_id = ? AND status = 'ACTIVE'";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
