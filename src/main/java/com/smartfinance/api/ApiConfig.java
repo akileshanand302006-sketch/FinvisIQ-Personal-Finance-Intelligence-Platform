@@ -6,7 +6,7 @@ package com.smartfinance.api;
  */
 public class ApiConfig {
 
-    public static final String DEFAULT_PRODUCTION_API_URL = "https://finvisiq-backend-production.up.railway.app";
+    public static final String DEFAULT_PRODUCTION_API_URL = "https://finvisiq-personal-finance-intelligence-platform-production.up.railway.app";
     public static final String DEFAULT_LOCAL_API_URL = "http://localhost:8085";
 
     private static String customBaseUrl = null;

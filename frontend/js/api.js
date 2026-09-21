@@ -12,28 +12,43 @@ class FinvisIQApi {
   /**
    * Resolve Backend API Base URL dynamically.
    * Priority:
-   * 1. window.ENV.API_URL (injected during deploy)
-   * 2. localStorage override (finvisiq_api_url)
-   * 3. Local development origin check (localhost:8085)
+   * 1. localStorage override (finvisiq_api_url)
+   * 2. Local development origin check (localhost / 127.0.0.1 -> http://localhost:8085)
+   * 3. window.ENV.API_URL or window.ENV.VITE_API_BASE_URL (injected runtime config)
    * 4. Production Railway URL
    */
   getBaseUrl() {
-    if (window.ENV && window.ENV.API_URL && window.ENV.API_URL.trim() !== '') {
-      return window.ENV.API_URL.replace(/\/+$/, '');
-    }
+    const sanitizeUrl = (url) => {
+      if (!url) return '';
+      let clean = url.trim().replace(/\/+$/, '');
+      if (clean.endsWith('/api')) {
+        clean = clean.slice(0, -4).replace(/\/+$/, '');
+      }
+      return clean;
+    };
 
+    // 1. Check custom override from user settings modal
     const custom = localStorage.getItem(this.apiUrlKey);
     if (custom && custom.trim() !== '') {
-      return custom.replace(/\/+$/, '');
+      return sanitizeUrl(custom);
     }
 
+    // 2. Check local development host
     const host = window.location.hostname;
     if (host === 'localhost' || host === '127.0.0.1') {
       return 'http://localhost:8085';
     }
 
-    // Default Railway Backend Endpoint
-    return 'https://finvisiq-backend-production.up.railway.app';
+    // 3. Runtime environment variables (Netlify deploy or window.ENV)
+    if (window.ENV) {
+      const envUrl = window.ENV.API_URL || window.ENV.VITE_API_BASE_URL;
+      if (envUrl && envUrl.trim() !== '') {
+        return sanitizeUrl(envUrl);
+      }
+    }
+
+    // 4. Default Production Railway Backend Endpoint
+    return 'https://finvisiq-personal-finance-intelligence-platform-production.up.railway.app';
   }
 
   getToken() {
@@ -77,7 +92,12 @@ class FinvisIQApi {
 
   async request(path, options = {}) {
     const baseUrl = this.getBaseUrl();
-    const url = `${baseUrl}${path.startsWith('/') ? path : '/' + path}`;
+    let cleanPath = path.startsWith('/') ? path : '/' + path;
+    // Guard against accidental double /api/api path construction
+    if (baseUrl.endsWith('/api') && cleanPath.startsWith('/api/')) {
+      cleanPath = cleanPath.substring(4);
+    }
+    const url = `${baseUrl}${cleanPath}`;
 
     const headers = {
       'Content-Type': 'application/json',
@@ -100,20 +120,60 @@ class FinvisIQApi {
       const data = await response.json().catch(() => ({}));
 
       if (response.status === 401) {
-        // Unauthorized
+        // Unauthorized - session expired or invalid credentials
         this.setToken(null);
         this.setUser(null);
         window.dispatchEvent(new CustomEvent('finvisiq:unauthorized', { detail: { path } }));
-        throw new Error(data.message || 'Session expired or invalid credentials.');
+        const err = new Error(data.message || 'Authentication required: Invalid credentials or session expired (HTTP 401).');
+        err.status = 401;
+        throw err;
+      }
+
+      if (response.status === 403) {
+        const err = new Error(data.message || 'Access Forbidden: You do not have permission to access this resource (HTTP 403).');
+        err.status = 403;
+        throw err;
+      }
+
+      if (response.status === 404) {
+        const err = new Error(data.message || `Endpoint not found: The requested API path "${cleanPath}" was not found (HTTP 404).`);
+        err.status = 404;
+        throw err;
+      }
+
+      if (response.status >= 502 && response.status <= 504) {
+        const err = new Error(data.message || `Backend Service Unavailable (HTTP ${response.status}): The Railway backend is waking up or temporarily unreachable. Please retry in a moment.`);
+        err.status = response.status;
+        throw err;
+      }
+
+      if (response.status >= 500) {
+        const err = new Error(data.message || `Internal Server Error (HTTP ${response.status}): The backend encountered an unexpected condition.`);
+        err.status = response.status;
+        throw err;
       }
 
       if (!response.ok) {
-        throw new Error(data.message || `Request failed with status ${response.status}`);
+        const err = new Error(data.message || `API request failed with HTTP status ${response.status}`);
+        err.status = response.status;
+        throw err;
       }
 
       return data;
     } catch (error) {
-      console.error(`[FinvisIQ API Error] ${options.method || 'GET'} ${path}:`, error);
+      if (!error.status) {
+        // Network or CORS failure: fetch() rejected before an HTTP response was obtained
+        const isNetworkOrCors = error.name === 'TypeError' || (error.message && error.message.toLowerCase().includes('fetch'));
+        if (isNetworkOrCors) {
+          const detailMsg = `Network or CORS Connection Error: Unable to reach FinvisIQ backend at ${baseUrl}. Please check internet connection or verify the Railway server is running and allowing CORS from ${window.location.origin}.`;
+          console.error(`[FinvisIQ Network/CORS Error] ${options.method || 'GET'} ${url}:`, error);
+          const networkErr = new Error(detailMsg);
+          networkErr.status = 0;
+          networkErr.isNetworkError = true;
+          throw networkErr;
+        }
+      }
+      console.error(`[FinvisIQ API Error] ${options.method || 'GET'} ${cleanPath} [Status: ${error.status || 'ERR'}]:`, error);
       throw error;
     }
   }

@@ -24,7 +24,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(@org.springframework.lang.NonNull InterceptorRegistry registry) {
         registry.addInterceptor(jwtAuthInterceptor)
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/health/**", "/api/auth/login", "/api/auth/register");
+                .excludePathPatterns("/api/health", "/api/health/**", "/api/auth/login", "/api/auth/register");
     }
 
     @Override

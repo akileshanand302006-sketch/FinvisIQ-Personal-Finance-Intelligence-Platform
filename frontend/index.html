@@ -33,8 +33,8 @@
   <!-- Runtime Production Environment Configuration -->
   <script>
     window.ENV = window.ENV || {
-      // Railway backend endpoint or fallback to dynamic resolution in api.js
-      API_URL: ''
+      // Production Railway backend endpoint (auto-detected fallback in api.js)
+      API_URL: 'https://finvisiq-personal-finance-intelligence-platform-production.up.railway.app'
     };
   </script>
 </head>
@@ -1448,11 +1448,11 @@
       </p>
       <div class="form-group">
         <label class="form-label" for="config-api-url">API Base URL</label>
-        <input type="text" id="config-api-url" class="form-input" placeholder="https://<your-railway-app>.up.railway.app">
+        <input type="text" id="config-api-url" class="form-input" placeholder="https://finvisiq-personal-finance-intelligence-platform-production.up.railway.app">
       </div>
       <div style="display: flex; gap: 8px; margin-top: 8px;">
         <button type="button" class="btn-secondary" style="font-size: 12px; padding: 6px 10px;" onclick="document.getElementById('config-api-url').value = 'http://localhost:8085'">Set Local (8085)</button>
-        <button type="button" class="btn-secondary" style="font-size: 12px; padding: 6px 10px;" onclick="document.getElementById('config-api-url').value = 'https://finvisiq-backend-production.up.railway.app'">Set Railway Prod</button>
+        <button type="button" class="btn-secondary" style="font-size: 12px; padding: 6px 10px;" onclick="document.getElementById('config-api-url').value = 'https://finvisiq-personal-finance-intelligence-platform-production.up.railway.app'">Set Railway Prod</button>
       </div>
     </div>
     <div class="modal-footer">

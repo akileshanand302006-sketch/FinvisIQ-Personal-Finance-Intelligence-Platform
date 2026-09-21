@@ -24,6 +24,8 @@ Thumbs.db
 .env
 *.env
 .env.*
+!.env.example
+!*.env.example
 
 # Database credentials & local configs
 !src/main/resources/application.properties

@@ -295,7 +295,7 @@ The frontend should only know the public backend API URL.
 ### Example
 
 ```text
-VITE_API_BASE_URL=https://finvisiq-backend-production.up.railway.app
+VITE_API_BASE_URL=https://finvisiq-personal-finance-intelligence-platform-production.up.railway.app
 ```
 
 Replace this with the actual Railway domain.
