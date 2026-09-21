@@ -8,10 +8,13 @@ import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 import javax.net.ssl.*;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * Database Manager - Handles MySQL connection and schema initialization.
@@ -193,11 +196,49 @@ public class DatabaseManager {
         return defaultVal;
     }
 
+    private static HikariDataSource dataSource;
+
     public static synchronized DatabaseManager getInstance() {
         if (instance == null) {
             instance = new DatabaseManager();
         }
         return instance;
+    }
+
+    private static synchronized void initDataSource() {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return;
+        }
+        if (dataSource == null || dataSource.isClosed()) {
+            try {
+                HikariConfig config = new HikariConfig();
+                config.setDriverClassName(dbDriver);
+                config.setJdbcUrl(dbUrl);
+                config.setUsername(dbUsername);
+                config.setPassword(dbPassword != null ? dbPassword : "");
+
+                // Optimal pool parameters for Railway / Aiven Cloud workloads
+                config.setMaximumPoolSize(10);
+                config.setMinimumIdle(2);
+                config.setConnectionTimeout(30000);
+                config.setIdleTimeout(600000);
+                config.setMaxLifetime(1800000);
+                config.setPoolName("FinvisIQ-HikariPool");
+
+                // MySQL JDBC Driver performance and caching optimizations
+                config.addDataSourceProperty("cachePrepStmts", "true");
+                config.addDataSourceProperty("prepStmtCacheSize", "250");
+                config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+                config.addDataSourceProperty("useServerPrepStmts", "true");
+                config.setConnectionTestQuery("SELECT 1");
+
+                dataSource = new HikariDataSource(config);
+                System.out.println("[FinvisIQ] HikariCP connection pool initialized successfully (" + dbUrl + ")");
+            } catch (Throwable e) {
+                System.err.println("[FinvisIQ] HikariCP pool initialization notice: " + e.getMessage() + ". Will fall back to direct DriverManager.");
+                dataSource = null;
+            }
+        }
     }
 
     public Connection getConnection() throws SQLException {
@@ -207,11 +248,43 @@ public class DatabaseManager {
         if (dbPassword == null || dbPassword.isBlank()) {
             System.err.println("WARNING: DB_PASSWORD environment variable is not set. Please set DB_PASSWORD to connect to the FinvisIQ database.");
         }
+
+        // Try pooled connection first
+        if (dataSource == null || dataSource.isClosed()) {
+            initDataSource();
+        }
+        if (dataSource != null && !dataSource.isClosed()) {
+            try {
+                return dataSource.getConnection();
+            } catch (SQLException ex) {
+                System.err.println("[FinvisIQ] Pool connection acquisition warning: " + ex.getMessage() + ". Attempting direct connection...");
+            }
+        }
+
+        // Fallback to DriverManager
         try {
             return DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
         } catch (SQLException e) {
             System.err.println("Unable to connect to the FinvisIQ database. Please verify DB_URL, DB_USERNAME, DB_PASSWORD, network access, and Aiven service status.");
             throw e;
+        }
+    }
+
+    public boolean isDbHealthy() {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) return true;
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT 1")) {
+            return rs != null && rs.next();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static synchronized void closePool() {
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
+            dataSource = null;
         }
     }
 

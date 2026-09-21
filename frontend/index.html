@@ -37,6 +37,9 @@
       API_URL: 'https://finvisiq-personal-finance-intelligence-platform-production.up.railway.app'
     };
   </script>
+
+  <!-- FinvisIQ API Client Module (Pre-loaded in head for immediate global access) -->
+  <script src="js/api.js"></script>
 </head>
 <body>
 
@@ -1463,30 +1466,39 @@
 </div>
 
 <script>
-  function saveApiUrlConfig() {
-    const val = document.getElementById('config-api-url').value.trim();
-    if (val) {
-      localStorage.setItem('finvisiq_api_url', val);
-    } else {
-      localStorage.removeItem('finvisiq_api_url');
+  function prepareApiSettingsModal() {
+    const input = document.getElementById('config-api-url');
+    if (input && window.api) {
+      input.value = window.api.getBaseUrl();
     }
-    showToast('Backend URL updated! Reconnecting...', 'success');
+  }
+
+  function saveApiUrlConfig() {
+    const input = document.getElementById('config-api-url');
+    const val = input ? input.value.trim() : '';
+    if (val) {
+      window.api.setBaseUrl(val);
+    } else {
+      window.api.resetBaseUrl();
+    }
+    showToast('Backend API configured. Reconnecting...', 'info');
     closeModal('modal-api-settings');
-    pollDbHealth();
-    loadViewData(state.activeView);
+    if (typeof initializeApplication === 'function') {
+      initializeApplication(true);
+    } else {
+      pollDbHealth();
+      loadViewData(state.activeView);
+    }
   }
 
   // Populate input on open
-  document.getElementById('modal-api-settings')?.addEventListener('click', () => {
-    document.getElementById('config-api-url').value = window.api.getBaseUrl();
-  });
+  document.getElementById('modal-api-settings')?.addEventListener('click', prepareApiSettingsModal);
 </script>
 
 <!-- Toast Notification Container -->
 <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
-<!-- Application Controller Scripts -->
-<script src="js/api.js"></script>
+<!-- Application Controller Script -->
 <script src="js/app.js"></script>
 </body>
 </html>

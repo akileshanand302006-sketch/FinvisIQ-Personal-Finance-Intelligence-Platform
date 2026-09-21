@@ -34,14 +34,13 @@ public class FinancialHealthService {
      * - Balance Health: 15 points
      */
     public int calculateHealthScore(int userId) {
-        double savingsScore = calculateSavingsScore(userId);
-        double stabilityScore = calculateStabilityScore(userId);
-        double goalScore = calculateGoalScore(userId);
-        double investmentScore = calculateInvestmentScore(userId);
-        double balanceScore = calculateBalanceScore(userId);
+        return calculateHealthScore(getScoreBreakdown(userId));
+    }
 
-        int total = (int) Math.round(savingsScore + stabilityScore + goalScore + investmentScore + balanceScore);
-        return Math.min(100, Math.max(0, total));
+    public int calculateHealthScore(Map<String, Double> breakdown) {
+        if (breakdown == null || breakdown.isEmpty()) return 50;
+        double sum = breakdown.values().stream().mapToDouble(Double::doubleValue).sum();
+        return Math.min(100, Math.max(0, (int) Math.round(sum)));
     }
 
     /**

@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node -e \"const fs=require('fs'); fs.cpSync('js', 'dist/js', {recursive: true});\"",
     "preview": "vite preview"
   },
   "devDependencies": {

@@ -1,21 +1,24 @@
 /**
  * FinvisIQ API Client Module
- * Handles dynamic API routing, JWT token management, and REST communications.
+ * Handles dynamic API routing, JWT token management, automatic cold-start retry, and REST communications.
+ * Production Architecture: Frontend -> Railway Spring Boot API -> Aiven MySQL Cloud (Strict TLS/SSL).
  */
 class FinvisIQApi {
   constructor() {
     this.tokenKey = 'finvisiq_jwt';
     this.userKey = 'finvisiq_user';
     this.apiUrlKey = 'finvisiq_api_url';
+    this.productionUrl = 'https://finvisiq-personal-finance-intelligence-platform-production.up.railway.app';
   }
 
   /**
    * Resolve Backend API Base URL dynamically.
    * Priority:
-   * 1. localStorage override (finvisiq_api_url)
-   * 2. Local development origin check (localhost / 127.0.0.1 -> http://localhost:8085)
+   * 1. Explicit runtime/manual override if user deliberately selected one (localStorage)
+   * 2. Production VITE_API_BASE_URL (build-time / runtime environment)
    * 3. window.ENV.API_URL or window.ENV.VITE_API_BASE_URL (injected runtime config)
-   * 4. Production Railway URL
+   * 4. Local development host fallback (http://localhost:8085 if origin is localhost)
+   * 5. Safe production fallback (Railway Production Endpoint)
    */
   getBaseUrl() {
     const sanitizeUrl = (url) => {
@@ -27,28 +30,58 @@ class FinvisIQApi {
       return clean;
     };
 
+    const host = window.location.hostname;
+    const isLocalhost = host === 'localhost' || host === '127.0.0.1';
+
     // 1. Check custom override from user settings modal
     const custom = localStorage.getItem(this.apiUrlKey);
     if (custom && custom.trim() !== '') {
-      return sanitizeUrl(custom);
+      const cleanCustom = sanitizeUrl(custom);
+      // Guard: If deployed on production domain (e.g. Netlify), ignore stale localhost overrides
+      const pointsToLocal = cleanCustom.includes('localhost') || cleanCustom.includes('127.0.0.1');
+      if (!pointsToLocal || isLocalhost) {
+        return cleanCustom;
+      } else {
+        console.warn('[FinvisIQ] Clearing stale localhost override on production domain.');
+        localStorage.removeItem(this.apiUrlKey);
+      }
     }
 
-    // 2. Check local development host
-    const host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1') {
-      return 'http://localhost:8085';
-    }
+    // 2. Production VITE_API_BASE_URL (safely guarded against non-module script tag syntax errors)
+    try {
+      if (typeof import !== 'undefined' && import.meta && import.meta.env && import.meta.env.VITE_API_BASE_URL) {
+        const viteUrl = sanitizeUrl(import.meta.env.VITE_API_BASE_URL);
+        if (viteUrl) return viteUrl;
+      }
+    } catch (ignore) {}
 
-    // 3. Runtime environment variables (Netlify deploy or window.ENV)
+    // 3. Runtime environment variables (Netlify deploy injection or window.ENV)
     if (window.ENV) {
-      const envUrl = window.ENV.API_URL || window.ENV.VITE_API_BASE_URL;
+      const envUrl = window.ENV.VITE_API_BASE_URL || window.ENV.API_URL;
       if (envUrl && envUrl.trim() !== '') {
         return sanitizeUrl(envUrl);
       }
     }
 
-    // 4. Default Production Railway Backend Endpoint
-    return 'https://finvisiq-personal-finance-intelligence-platform-production.up.railway.app';
+    // 4. Local development origin check
+    if (isLocalhost) {
+      return 'http://localhost:8085';
+    }
+
+    // 5. Default Production Railway Backend Endpoint
+    return this.productionUrl;
+  }
+
+  setBaseUrl(url) {
+    if (url && url.trim() !== '') {
+      localStorage.setItem(this.apiUrlKey, url.trim());
+    } else {
+      localStorage.removeItem(this.apiUrlKey);
+    }
+  }
+
+  resetBaseUrl() {
+    localStorage.removeItem(this.apiUrlKey);
   }
 
   getToken() {
@@ -90,14 +123,18 @@ class FinvisIQApi {
     window.dispatchEvent(new CustomEvent('finvisiq:auth-changed', { detail: { loggedIn: false } }));
   }
 
-  async request(path, options = {}) {
+  /**
+   * Centralized HTTP Request Dispatcher with Cold-Start Automatic Retry.
+   * Handles JWT injection, JSON parsing, error normalization, and transparent retry for 502/503/504 / network cold start.
+   */
+  async request(path, options = {}, retriesLeft = 2) {
     const baseUrl = this.getBaseUrl();
     let cleanPath = path.startsWith('/') ? path : '/' + path;
-    // Guard against accidental double /api/api path construction
     if (baseUrl.endsWith('/api') && cleanPath.startsWith('/api/')) {
       cleanPath = cleanPath.substring(4);
     }
     const url = `${baseUrl}${cleanPath}`;
+    const method = (options.method || 'GET').toUpperCase();
 
     const headers = {
       'Content-Type': 'application/json',
@@ -119,36 +156,45 @@ class FinvisIQApi {
       const response = await fetch(url, config);
       const data = await response.json().catch(() => ({}));
 
+      // Handle 401 Unauthorized: token expired or invalid
       if (response.status === 401) {
-        // Unauthorized - session expired or invalid credentials
         this.setToken(null);
         this.setUser(null);
         window.dispatchEvent(new CustomEvent('finvisiq:unauthorized', { detail: { path } }));
-        const err = new Error(data.message || 'Authentication required: Invalid credentials or session expired (HTTP 401).');
+        const err = new Error(data.message || 'Session expired or invalid credentials (HTTP 401). Please log in again.');
         err.status = 401;
         throw err;
       }
 
+      // Handle 403 Forbidden
       if (response.status === 403) {
-        const err = new Error(data.message || 'Access Forbidden: You do not have permission to access this resource (HTTP 403).');
+        const err = new Error(data.message || 'Access Forbidden (HTTP 403).');
         err.status = 403;
         throw err;
       }
 
+      // Handle 404 Not Found
       if (response.status === 404) {
-        const err = new Error(data.message || `Endpoint not found: The requested API path "${cleanPath}" was not found (HTTP 404).`);
+        const err = new Error(data.message || `Endpoint not found (HTTP 404): ${cleanPath}`);
         err.status = 404;
         throw err;
       }
 
+      // Handle 502/503/504 (Railway waking up or gateway delay) with controlled retry on idempotent requests
       if (response.status >= 502 && response.status <= 504) {
-        const err = new Error(data.message || `Backend Service Unavailable (HTTP ${response.status}): The Railway backend is waking up or temporarily unreachable. Please retry in a moment.`);
+        if (retriesLeft > 0 && (method === 'GET' || path.includes('/health'))) {
+          const delayMs = retriesLeft === 2 ? 800 : 1600;
+          console.warn(`[FinvisIQ] Backend warming up (${response.status}). Retrying ${cleanPath} in ${delayMs}ms... (${retriesLeft} retries remaining)`);
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          return this.request(path, options, retriesLeft - 1);
+        }
+        const err = new Error(data.message || `Backend Service Unavailable (HTTP ${response.status}): The Railway backend is waking up or temporarily unreachable. Please retry.`);
         err.status = response.status;
         throw err;
       }
 
       if (response.status >= 500) {
-        const err = new Error(data.message || `Internal Server Error (HTTP ${response.status}): The backend encountered an unexpected condition.`);
+        const err = new Error(data.message || `Internal Server Error (HTTP ${response.status})`);
         err.status = response.status;
         throw err;
       }
@@ -161,19 +207,25 @@ class FinvisIQApi {
 
       return data;
     } catch (error) {
-      if (!error.status) {
-        // Network or CORS failure: fetch() rejected before an HTTP response was obtained
-        const isNetworkOrCors = error.name === 'TypeError' || (error.message && error.message.toLowerCase().includes('fetch'));
-        if (isNetworkOrCors) {
-          const detailMsg = `Network or CORS Connection Error: Unable to reach FinvisIQ backend at ${baseUrl}. Please check internet connection or verify the Railway server is running and allowing CORS from ${window.location.origin}.`;
-          console.error(`[FinvisIQ Network/CORS Error] ${options.method || 'GET'} ${url}:`, error);
-          const networkErr = new Error(detailMsg);
-          networkErr.status = 0;
-          networkErr.isNetworkError = true;
-          throw networkErr;
-        }
+      // Automatic retry for transient network / fetch failures (e.g. cold start connection reset)
+      const isTransientNetwork = !error.status && (error.name === 'TypeError' || (error.message && error.message.toLowerCase().includes('fetch')));
+      if (isTransientNetwork && retriesLeft > 0 && (method === 'GET' || path.includes('/health'))) {
+        const delayMs = retriesLeft === 2 ? 800 : 1600;
+        console.warn(`[FinvisIQ] Network fetch failure. Retrying ${cleanPath} in ${delayMs}ms... (${retriesLeft} retries remaining)`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+        return this.request(path, options, retriesLeft - 1);
       }
-      console.error(`[FinvisIQ API Error] ${options.method || 'GET'} ${cleanPath} [Status: ${error.status || 'ERR'}]:`, error);
+
+      if (!error.status && isTransientNetwork) {
+        const detailMsg = `Network Connection Error: Unable to reach FinvisIQ backend at ${baseUrl}. Please check internet connection or verify Railway backend service is running.`;
+        console.error(`[FinvisIQ Network Error] ${method} ${url}:`, error);
+        const networkErr = new Error(detailMsg);
+        networkErr.status = 0;
+        networkErr.isNetworkError = true;
+        throw networkErr;
+      }
+
+      console.error(`[FinvisIQ API Error] ${method} ${cleanPath} [Status: ${error.status || 'ERR'}]:`, error);
       throw error;
     }
   }
@@ -186,10 +238,10 @@ class FinvisIQApi {
   async checkHealth() {
     const res = await this.request('/api/health');
     const isDbConnected = !!(
+      (res.data && res.data.databaseConnected) ||
+      (res.data && res.data.dbConnected) ||
       res.databaseConnected ||
-      res.dbConnected ||
-      (res.data && (res.data.databaseConnected || res.data.dbConnected)) ||
-      (res.data && res.data.status === 'UP')
+      res.dbConnected
     );
     return {
       ...res,
@@ -200,6 +252,10 @@ class FinvisIQApi {
 
   async checkDbHealth() {
     return this.request('/api/health/db');
+  }
+
+  async health() {
+    return this.checkHealth();
   }
 
   // 2. Authentication & Identity
@@ -262,7 +318,7 @@ class FinvisIQApi {
   }
 
   async getDashboard() {
-    return this.request('/api/dashboard');
+    return this.getDashboardSummary();
   }
 
   // 4. Transactions Ledger (CRUD & Filter)
@@ -393,6 +449,13 @@ class FinvisIQApi {
     });
   }
 
+  async updateInvestment(id, investmentData) {
+    return this.request(`/api/investments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(investmentData)
+    });
+  }
+
   async deleteInvestment(id) {
     return this.request(`/api/investments/${id}`, {
       method: 'DELETE'
@@ -410,6 +473,13 @@ class FinvisIQApi {
         timePeriodYears: Number(timePeriodYears)
       })
     });
+  }
+
+  async getSIPData(monthlyInvestment, expectedReturnRate, timePeriodYears) {
+    if (monthlyInvestment !== undefined) {
+      return this.calculateSIP(monthlyInvestment, expectedReturnRate, timePeriodYears);
+    }
+    return this.getInvestments();
   }
 
   // 8. Net Worth & Balance Sheet
@@ -438,6 +508,10 @@ class FinvisIQApi {
     return this.request('/api/liabilities');
   }
 
+  async getDebts() {
+    return this.getLiabilities();
+  }
+
   async createLiability(liabilityData) {
     return this.request('/api/liabilities', {
       method: 'POST',
@@ -445,10 +519,18 @@ class FinvisIQApi {
     });
   }
 
+  async createDebt(debtData) {
+    return this.createLiability(debtData);
+  }
+
   async deleteLiability(id) {
     return this.request(`/api/liabilities/${id}`, {
       method: 'DELETE'
     });
+  }
+
+  async deleteDebt(id) {
+    return this.deleteLiability(id);
   }
 
   // 9. Subscriptions
@@ -506,6 +588,20 @@ class FinvisIQApi {
     return this.request('/api/notifications', {
       method: 'DELETE'
     });
+  }
+
+  // 12. Lifecycle & Reconnection
+  async init() {
+    console.log('[FinvisIQ] API client initialized. Base URL:', this.getBaseUrl());
+    return this.checkHealth();
+  }
+
+  async reconnect(customUrl) {
+    if (customUrl !== undefined) {
+      this.setBaseUrl(customUrl);
+    }
+    console.log('[FinvisIQ] Reconnecting API client to:', this.getBaseUrl());
+    return this.checkHealth();
   }
 }
 

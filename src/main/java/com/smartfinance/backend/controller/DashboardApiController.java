@@ -39,8 +39,8 @@ public class DashboardApiController {
         double netBalance = totalIncome - totalExpenses;
         double savingsRate = totalIncome > 0 ? Math.max(0, ((totalIncome - totalExpenses) / totalIncome) * 100) : 0.0;
 
-        int healthScore = financialHealthService.calculateHealthScore(userId);
         HashMap<String, Double> scoreBreakdown = financialHealthService.getScoreBreakdown(userId);
+        int healthScore = financialHealthService.calculateHealthScore(scoreBreakdown);
         double predictedExpenses = predictionService.predictNextMonthExpenses(userId);
         double netWorth = netWorthService.getNetWorth(userId);
 

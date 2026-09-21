@@ -44,3 +44,9 @@ reports/generated/
 
 # Personal/local configuration
 local/
+
+# Node & Frontend Build
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/

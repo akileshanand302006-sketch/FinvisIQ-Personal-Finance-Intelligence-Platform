@@ -54,6 +54,12 @@
             <version>8.3.0</version>
         </dependency>
 
+        <!-- HikariCP Connection Pool -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+
         <!-- JWT Authentication (JJWT) -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

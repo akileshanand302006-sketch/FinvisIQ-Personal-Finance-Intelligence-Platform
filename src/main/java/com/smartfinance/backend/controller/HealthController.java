@@ -26,11 +26,7 @@ public class HealthController {
         data.put("version", "2.0.0");
         data.put("timestamp", Instant.now().toString());
 
-        boolean dbConnected = false;
-        try (Connection conn = DatabaseManager.getInstance().getConnection()) {
-            dbConnected = (conn != null && !conn.isClosed());
-        } catch (Exception ignore) {}
-
+        boolean dbConnected = DatabaseManager.getInstance().isDbHealthy();
         data.put("databaseConnected", dbConnected);
         data.put("dbConnected", dbConnected);
 

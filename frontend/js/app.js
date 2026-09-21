@@ -145,6 +145,12 @@ function showToast(message, type = 'info') {
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
+    if (modalId === 'modal-api-settings') {
+      const input = document.getElementById('config-api-url');
+      if (input && window.api) {
+        input.value = window.api.getBaseUrl();
+      }
+    }
     modal.classList.add('open');
     const firstInput = modal.querySelector('input:not([type="hidden"]), select');
     if (firstInput) setTimeout(() => firstInput.focus(), 80);
@@ -264,7 +270,10 @@ async function loadViewData(viewName) {
 // ------------------------------------------------------------------------------
 async function loadDashboard() {
   const res = await window.api.getDashboardSummary();
-  if (!res || !res.success || !res.data) return;
+  if (!res || !res.success || !res.data) {
+    console.warn('[FinvisIQ] Dashboard summary empty or pending');
+    return;
+  }
 
   const d = res.data;
   state.dashboardData = d;
@@ -289,7 +298,7 @@ async function loadDashboard() {
   const totalIncome = Number(d.totalIncome) || 0;
   const totalExpenses = Number(d.totalExpenses) || 0;
   const netWorth = Number(d.netWorth) || 0;
-  const savingsRate = Number(d.savingsRate) || 0;
+  const savingsRate = totalIncome > 0 ? Math.max(0, Math.round(((totalIncome - totalExpenses) / totalIncome) * 1000) / 10) : 0;
 
   // Count-Up Numbers
   const incomeEl = document.getElementById('dash-income');
@@ -310,12 +319,22 @@ async function loadDashboard() {
     if (savingsRateEl) savingsRateEl.innerText = `${savingsRate}%`;
   }
 
-  // Header Health Score Pill - Defensive against undefined/NaN
+  // Header Health Score Pill - Deterministic from backend or financial parameters (no hardcoded 75)
   const healthScoreEl = document.getElementById('header-health-score');
   if (healthScoreEl) {
     const rawScore = d.healthScore ?? d.financialHealthScore;
-    const score = (rawScore !== undefined && rawScore !== null && !isNaN(rawScore)) ? Math.round(rawScore) : 75;
-    healthScoreEl.innerText = `${score}/100`;
+    if (rawScore !== undefined && rawScore !== null && !isNaN(rawScore)) {
+      const score = Math.min(100, Math.max(0, Math.round(rawScore)));
+      healthScoreEl.innerText = `${score}/100`;
+    } else {
+      const savingsRatio = totalIncome > 0 ? (totalIncome - totalExpenses) / totalIncome : 0;
+      const calcScore = Math.min(100, Math.max(0, Math.round(
+        (savingsRatio >= 0.3 ? 30 : (savingsRatio >= 0.2 ? 25 : (savingsRatio >= 0.1 ? 18 : 10))) +
+        (netWorth > 0 ? 30 : 15) +
+        (totalIncome >= totalExpenses ? 25 : 5) + 15
+      )));
+      healthScoreEl.innerText = `${calcScore}/100`;
+    }
   }
 
   // Render Charts
@@ -912,13 +931,17 @@ async function loadSubscriptions() {
   let monthlyTotal = 0;
   res.data.forEach(s => {
     const amt = Number(s.amount) || 0;
-    if (s.billingCycle === 'YEARLY') monthlyTotal += amt / 12;
-    else if (s.billingCycle === 'QUARTERLY') monthlyTotal += amt / 3;
+    const cycle = (s.billingCycle || 'MONTHLY').trim().toUpperCase();
+    if (cycle === 'YEARLY' || cycle === 'ANNUAL') monthlyTotal += amt / 12;
+    else if (cycle === 'QUARTERLY') monthlyTotal += amt / 3;
+    else if (cycle === 'WEEKLY') monthlyTotal += (amt * 52) / 12;
     else monthlyTotal += amt;
   });
 
   const totalEl = document.getElementById('subs-monthly-total');
-  if (totalEl) totalEl.innerText = formatCurrency(monthlyTotal);
+  if (totalEl) totalEl.innerText = formatCurrency(Math.round(monthlyTotal));
+  const annualEl = document.getElementById('subs-annual-total');
+  if (annualEl) annualEl.innerText = formatCurrency(Math.round(monthlyTotal * 12));
 
   if (res.data.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6">
@@ -1006,34 +1029,93 @@ async function loadAiInsights() {
 }
 
 // ------------------------------------------------------------------------------
-// LIVE AIVEN DB HEARTBEAT
+// LIVE AIVEN DB HEARTBEAT & SYNCHRONIZATION
 // ------------------------------------------------------------------------------
 async function pollDbHealth() {
+  const pill = document.getElementById('header-db-pill');
   try {
     const res = await window.api.checkHealth();
-    const pill = document.getElementById('header-db-pill');
     if (pill) {
       const isConnected = !!(
         res &&
         (res.databaseConnected ||
          res.dbConnected ||
-         (res.data && (res.data.databaseConnected || res.data.dbConnected)) ||
-         (res.data && res.data.status === 'UP') ||
-         res.success)
+         (res.data && (res.data.databaseConnected || res.data.dbConnected)))
       );
       if (isConnected) {
-        pill.innerHTML = `<span class="db-dot"></span><span>Aiven MySQL Cloud (SSL Active)</span>`;
+        pill.innerHTML = `<span class="db-dot"></span><span>Aiven MySQL Cloud (Connected)</span>`;
       } else {
         pill.innerHTML = `<span class="db-dot" style="background: var(--danger);"></span><span>DB Disconnected</span>`;
       }
     }
+    return res;
   } catch (e) {
-    const pill = document.getElementById('header-db-pill');
     if (pill) {
       pill.innerHTML = `<span class="db-dot" style="background: var(--danger);"></span><span>DB Disconnected</span>`;
     }
+    throw e;
   }
 }
+
+async function syncDashboardData() {
+  try {
+    const res = await window.api.getDashboardSummary();
+    if (res && res.success && res.data) {
+      state.dashboardData = res.data;
+      if (state.activeView === 'dashboard') {
+        loadDashboard();
+      }
+    }
+  } catch (ignore) {}
+}
+
+let isInitializing = false;
+
+async function initializeApplication(forceRefresh = false) {
+  if (isInitializing) return;
+  isInitializing = true;
+
+  const pill = document.getElementById('header-db-pill');
+  if (pill) {
+    pill.innerHTML = `<span class="db-dot" style="background: var(--warning); animation: pulse 1.5s infinite;"></span><span>Connecting to Cloud DB...</span>`;
+  }
+
+  try {
+    // 1. Verify live database connection
+    try {
+      await pollDbHealth();
+    } catch (err) {
+      console.warn('[FinvisIQ] Startup health ping notice:', err.message);
+    }
+
+    // 2. Restore User & Active View State
+    if (window.api.isLoggedIn()) {
+      showAuthContainer(false);
+      const user = window.api.getUser();
+      if (user) {
+        const nameEl = document.getElementById('user-display-name');
+        const emailEl = document.getElementById('user-display-email');
+        const avatarEl = document.getElementById('user-avatar');
+        if (nameEl) nameEl.innerText = formatSafeText(user.name, 'FinvisIQ User');
+        if (emailEl) emailEl.innerText = formatSafeText(user.email, '');
+        if (avatarEl) avatarEl.innerText = (user.name || 'U').charAt(0).toUpperCase();
+      }
+
+      if (forceRefresh) {
+        state.hasAnimatedNumbers = false;
+      }
+      await switchView(state.activeView || 'dashboard');
+    } else {
+      showAuthContainer(true);
+    }
+  } catch (e) {
+    console.error('[FinvisIQ] Application bootstrap error:', e);
+  } finally {
+    isInitializing = false;
+  }
+}
+
+window.initializeApplication = initializeApplication;
 
 function refreshAllCharts() {
   if (state.dashboardData) {
@@ -1118,15 +1200,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Auth State Listener
   window.addEventListener('finvisiq:auth-changed', (e) => {
     if (e.detail.loggedIn) {
-      const user = window.api.getUser();
-      if (user) {
-        document.getElementById('user-display-name').innerText = formatSafeText(user.name, 'Akilesh');
-        document.getElementById('user-display-email').innerText = formatSafeText(user.email, '');
-        document.getElementById('user-avatar').innerText = (user.name || 'U').charAt(0).toUpperCase();
-      }
-      showAuthContainer(false);
-      state.hasAnimatedNumbers = false;
-      switchView(state.activeView);
+      initializeApplication(true);
     } else {
       showAuthContainer(true);
     }
@@ -1391,21 +1465,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Initial App State Resolution
-  if (window.api.isLoggedIn()) {
-    showAuthContainer(false);
-    const user = window.api.getUser();
-    if (user) {
-      document.getElementById('user-display-name').innerText = formatSafeText(user.name, 'Akilesh');
-      document.getElementById('user-display-email').innerText = formatSafeText(user.email, '');
-      document.getElementById('user-avatar').innerText = (user.name || 'U').charAt(0).toUpperCase();
-    }
-    switchView('dashboard');
-  } else {
-    showAuthContainer(true);
-  }
+  // Automatic Production Initialization Pipeline
+  initializeApplication();
 
-  // Live Database Heartbeat
-  pollDbHealth();
+  // Periodic Database Health Heartbeat (every 30 seconds)
   setInterval(pollDbHealth, 30000);
 });
