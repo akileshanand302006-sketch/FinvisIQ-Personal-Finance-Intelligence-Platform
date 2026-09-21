@@ -11,7 +11,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
- * Finora — Personal Finance Intelligence Platform
+ * FinvisIQ — Personal Finance Intelligence Platform
  * Main Application Entry Point.
  */
 public class App extends Application {
@@ -26,7 +26,7 @@ public class App extends Application {
         themeManager = ThemeManager.getInstance();
 
         // Configure stage
-        stage.setTitle("Finora — Personal Finance Intelligence Platform");
+        stage.setTitle("FinvisIQ — Personal Finance Intelligence Platform");
         stage.setMinWidth(1100);
         stage.setMinHeight(700);
         stage.setWidth(1280);

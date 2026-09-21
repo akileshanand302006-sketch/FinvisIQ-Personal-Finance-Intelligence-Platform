@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 /**
  * User model representing both Admin and Common users.
- * Extended for Finora with profile settings, currency, and status.
+ * Extended for FinvisIQ with profile settings, currency, and status.
  */
 public class User {
     private int userId;

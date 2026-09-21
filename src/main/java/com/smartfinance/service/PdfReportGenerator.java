@@ -61,7 +61,7 @@ public class PdfReportGenerator {
         content.append("/F2 18 Tf\n");
         content.append("1.0 1.0 1.0 rg\n");
         content.append("1 0 0 1 55 753 Tm\n");
-        content.append("(FINORA EXECUTIVE FINANCIAL & ANALYTICAL REPORT) Tj\n");
+        content.append("(FINVISIQ EXECUTIVE FINANCIAL & ANALYTICAL REPORT) Tj\n");
         content.append("ET\n");
 
         // Metadata Section
@@ -224,7 +224,7 @@ public class PdfReportGenerator {
         // Footer Note
         content.append("BT\n");
         content.append("/F1 8 Tf 0.5 0.5 0.5 rg\n");
-        content.append("1 0 0 1 40 25 Tm (Finora Personal Finance Intelligence System - Executive Analytical Report) Tj\n");
+        content.append("1 0 0 1 40 25 Tm (FinvisIQ Personal Finance Intelligence System - Executive Analytical Report) Tj\n");
         content.append("ET\n");
 
         byte[] streamBytes = content.toString().getBytes(StandardCharsets.ISO_8859_1);

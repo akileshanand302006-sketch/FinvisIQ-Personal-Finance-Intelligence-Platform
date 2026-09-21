@@ -65,7 +65,7 @@ public class ReportsController {
         exportPdfBtn.setOnAction(e -> {
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Export Financial Report (PDF)");
-            chooser.setInitialFileName("Finora_Report_" + currentUser.getName().replaceAll("\\s+", "_") + ".pdf");
+            chooser.setInitialFileName("FinvisIQ_Report_" + currentUser.getName().replaceAll("\\s+", "_") + ".pdf");
             chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Document", "*.pdf"));
             File file = chooser.showSaveDialog(root.getScene().getWindow());
             if (file != null) {
@@ -84,7 +84,7 @@ public class ReportsController {
         exportWordBtn.setOnAction(e -> {
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Export Financial Report (Word)");
-            chooser.setInitialFileName("Finora_Report_" + currentUser.getName().replaceAll("\\s+", "_") + ".docx");
+            chooser.setInitialFileName("FinvisIQ_Report_" + currentUser.getName().replaceAll("\\s+", "_") + ".docx");
             chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Word Document", "*.docx", "*.doc"));
             File file = chooser.showSaveDialog(root.getScene().getWindow());
             if (file != null) {

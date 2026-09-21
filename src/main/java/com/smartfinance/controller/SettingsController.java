@@ -110,7 +110,7 @@ public class SettingsController {
         Label infoTitle = new Label("\u2139\uFE0F System Information");
         infoTitle.getStyleClass().add("section-title");
 
-        Label vInfo = new Label("Finora Engine Version: 2.0.0 (Build 2026.08)");
+        Label vInfo = new Label("FinvisIQ Engine Version: 2.0.0 (Build 2026.08)");
         vInfo.getStyleClass().add("label-muted");
         Label dbInfo = new Label("Database Backend: MySQL (smart_finance_db)");
         dbInfo.getStyleClass().add("label-muted");

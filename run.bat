@@ -8,9 +8,16 @@ if not exist "%JAVA_HOME%\bin\java.exe" (
 )
 set MVN="%~dp0tools\apache-maven-3.9.14\bin\mvn.cmd"
 
+REM Configure FinvisIQ Cloud Database Environment Variables if not present
+if "%DB_URL%"=="" set DB_URL=jdbc:mysql://mysql-18243dae-akileshanand302006-3318.a.aivencloud.com:20218/smart_finance_db?sslMode=REQUIRED
+if "%DB_USERNAME%"=="" set DB_USERNAME=avnadmin
+if "%DB_PASSWORD%"=="" (
+    echo [FINVISIQ] DB_PASSWORD is not set in environment.
+)
+
 echo.
 echo  ========================================
-echo   SmartFinance - AI Financial Advisor
+echo   FinvisIQ — Personal Finance Intelligence
 echo  ========================================
 echo.
 

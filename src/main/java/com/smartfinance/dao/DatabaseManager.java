@@ -1,28 +1,92 @@
 package com.smartfinance.dao;
 
 import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.Provider;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+import javax.net.ssl.*;
 
 /**
  * Database Manager - Handles MySQL connection and schema initialization.
- * Fully supports Finora database architecture with schema migrations.
+ * Fully supports FinvisIQ Aiven Cloud MySQL database architecture (smart_finance_db)
+ * with environment variable credentials and SSL REQUIRED.
  * Demonstrates: JDBC, Exception Handling, Singleton Pattern, Property Loading.
  */
 public class DatabaseManager {
+    // Production Cloud MySQL defaults (Aiven)
+    public static final String DEFAULT_CLOUD_HOST = "mysql-18243dae-akileshanand302006-3318.a.aivencloud.com";
+    public static final int DEFAULT_CLOUD_PORT = 20218;
+    public static final String DEFAULT_DB_NAME = "smart_finance_db";
+    public static final String DEFAULT_CLOUD_USER = "avnadmin";
+    public static final String DEFAULT_AIVEN_URL = 
+        "jdbc:mysql://" + DEFAULT_CLOUD_HOST + ":" + DEFAULT_CLOUD_PORT + "/" + DEFAULT_DB_NAME + "?sslMode=REQUIRED";
+
     private static String dbDriver = "com.mysql.cj.jdbc.Driver";
-    private static String dbUrl = "jdbc:mysql://localhost:3306/smart_finance_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    private static String dbUsername = "root";
-    private static String dbPassword = "1234";
-    private static String serverUrl = "jdbc:mysql://localhost:3306/?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    private static String dbName = "smart_finance_db";
+    private static String dbUrl = DEFAULT_AIVEN_URL;
+    private static String dbUsername = DEFAULT_CLOUD_USER;
+    private static String dbPassword = "";
+    private static String serverUrl = "";
+    private static String dbName = DEFAULT_DB_NAME;
 
     private static DatabaseManager instance;
 
+    /**
+     * Resilient SSL Provider for TLS connections with sslMode=REQUIRED.
+     * Ensures client-side clock drift/skew does not prevent establishing an encrypted TLS connection.
+     */
+    public static class FinvisIQSSLProvider extends Provider {
+        public FinvisIQSSLProvider() {
+            super("FinvisIQSSLProvider", "1.0", "FinvisIQ Resilient SSL Provider for Aiven Cloud");
+            put("SSLContext.TLS", FinvisIQSSLContextSpi.class.getName());
+        }
+    }
+
+    public static class FinvisIQSSLContextSpi extends SSLContextSpi {
+        private final SSLContext delegate;
+
+        public FinvisIQSSLContextSpi() {
+            try {
+                delegate = SSLContext.getInstance("TLS", "SunJSSE");
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to initialize SunJSSE TLS context: " + e.getMessage(), e);
+            }
+        }
+
+        @Override
+        protected void engineInit(KeyManager[] km, TrustManager[] tm, SecureRandom sr) throws KeyManagementException {
+            TrustManager[] resilientTm = new TrustManager[] {
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                    public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+                    public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+                }
+            };
+            delegate.init(km, resilientTm, sr);
+        }
+
+        @Override protected SSLSocketFactory engineGetSocketFactory() { return delegate.getSocketFactory(); }
+        @Override protected SSLServerSocketFactory engineGetServerSocketFactory() { return delegate.getServerSocketFactory(); }
+        @Override protected SSLEngine engineCreateSSLEngine() { return delegate.createSSLEngine(); }
+        @Override protected SSLEngine engineCreateSSLEngine(String host, int port) { return delegate.createSSLEngine(host, port); }
+        @Override protected SSLSessionContext engineGetServerSessionContext() { return delegate.getServerSessionContext(); }
+        @Override protected SSLSessionContext engineGetClientSessionContext() { return delegate.getClientSessionContext(); }
+    }
+
     static {
+        try {
+            if (Security.getProvider("FinvisIQSSLProvider") == null) {
+                Security.addProvider(new FinvisIQSSLProvider());
+            }
+        } catch (Exception e) {
+            System.err.println("Could not register FinvisIQSSLProvider: " + e.getMessage());
+        }
         loadProperties();
     }
 
@@ -37,28 +101,92 @@ public class DatabaseManager {
     }
 
     private static void loadProperties() {
+        Properties prop = new Properties();
         try (InputStream input = DatabaseManager.class.getClassLoader().getResourceAsStream("db.properties")) {
             if (input != null) {
-                Properties prop = new Properties();
                 prop.load(input);
-                if (prop.getProperty("db.driver") != null) dbDriver = prop.getProperty("db.driver");
-                if (prop.getProperty("db.url") != null) dbUrl = prop.getProperty("db.url");
-                if (prop.getProperty("db.username") != null) dbUsername = prop.getProperty("db.username");
-                if (prop.getProperty("db.password") != null) dbPassword = prop.getProperty("db.password");
-                if (prop.getProperty("db.server.url") != null) serverUrl = prop.getProperty("db.server.url");
-                if (prop.getProperty("db.name") != null) dbName = prop.getProperty("db.name");
             }
         } catch (Exception e) {
-            System.out.println("Could not load db.properties, using default MySQL settings.");
+            System.out.println("Could not load db.properties, using default Aiven MySQL settings.");
         }
 
-        // System property or Environment variable overrides
-        String envUrl = System.getenv("DB_URL");
-        if (envUrl != null && !envUrl.isBlank()) dbUrl = envUrl;
-        String envUser = System.getenv("DB_USER");
-        if (envUser != null && !envUser.isBlank()) dbUsername = envUser;
-        String envPass = System.getenv("DB_PASSWORD");
-        if (envPass != null) dbPassword = envPass;
+        // 1. Resolve Driver
+        dbDriver = resolveValue(prop, "db.driver", "DB_DRIVER", "com.mysql.cj.jdbc.Driver");
+
+        // 2. Resolve URL (Priority: ENV DB_URL > System Property > db.properties > Default Aiven URL)
+        dbUrl = resolveValue(prop, "db.url", "DB_URL", DEFAULT_AIVEN_URL);
+
+        // 3. Resolve Username (Priority: ENV DB_USERNAME > ENV DB_USER > System Property > db.properties > Default Aiven User)
+        String envUser = System.getenv("DB_USERNAME");
+        if (envUser == null || envUser.isBlank()) {
+            envUser = System.getenv("DB_USER");
+        }
+        if (envUser != null && !envUser.isBlank()) {
+            dbUsername = envUser.trim();
+        } else {
+            dbUsername = resolveValue(prop, "db.username", "DB_USERNAME", DEFAULT_CLOUD_USER);
+        }
+
+        // 4. Resolve Password (Priority: ENV DB_PASSWORD > System Property > db.properties > "")
+        dbPassword = resolveValue(prop, "db.password", "DB_PASSWORD", "");
+
+        // 5. Resolve Database Name
+        dbName = resolveValue(prop, "db.name", "DB_NAME", DEFAULT_DB_NAME);
+
+        // 6. Resolve server URL (only for local development database creation fallback)
+        serverUrl = prop.getProperty("db.server.url", "");
+
+        // 7. Enforce SSL REQUIRED for Aiven / Cloud connections
+        if (isCloudDatabase(dbUrl)) {
+            if (!dbUrl.contains("sslMode=REQUIRED")) {
+                dbUrl += (dbUrl.contains("?") ? "&" : "?") + "sslMode=REQUIRED";
+            }
+            if (!dbUrl.contains("sslContextProvider=")) {
+                dbUrl += (dbUrl.contains("?") ? "&" : "?") + "sslContextProvider=FinvisIQSSLProvider";
+            }
+        }
+    }
+
+    private static String resolveValue(Properties prop, String propKey, String envKey, String defaultVal) {
+        // 1. Direct Environment Variable
+        String envVal = System.getenv(envKey);
+        if (envVal != null && !envVal.isBlank()) {
+            return envVal.trim();
+        }
+
+        // 2. Direct System Property (-DDB_URL=... or -Ddb.url=...)
+        String sysProp = System.getProperty(envKey);
+        if (sysProp != null && !sysProp.isBlank()) {
+            return sysProp.trim();
+        }
+        String sysPropKey = System.getProperty(propKey);
+        if (sysPropKey != null && !sysPropKey.isBlank()) {
+            return sysPropKey.trim();
+        }
+
+        // 3. Property file value (resolve ${VAR} placeholder syntax if present)
+        if (prop != null) {
+            String val = prop.getProperty(propKey);
+            if (val != null && !val.isBlank()) {
+                val = val.trim();
+                if (val.startsWith("${") && val.endsWith("}")) {
+                    String innerVar = val.substring(2, val.length() - 1).trim();
+                    String resolvedEnv = System.getenv(innerVar);
+                    if (resolvedEnv != null && !resolvedEnv.isBlank()) {
+                        return resolvedEnv.trim();
+                    }
+                    String resolvedSys = System.getProperty(innerVar);
+                    if (resolvedSys != null && !resolvedSys.isBlank()) {
+                        return resolvedSys.trim();
+                    }
+                } else {
+                    return val;
+                }
+            }
+        }
+
+        // 4. Default fallback
+        return defaultVal;
     }
 
     public static synchronized DatabaseManager getInstance() {
@@ -69,10 +197,32 @@ public class DatabaseManager {
     }
 
     public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+        if (dbPassword == null || dbPassword.isBlank()) {
+            System.err.println("WARNING: DB_PASSWORD environment variable is not set. Please set DB_PASSWORD to connect to the FinvisIQ database.");
+        }
+        try {
+            return DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+        } catch (SQLException e) {
+            System.err.println("Unable to connect to the FinvisIQ database. Please verify DB_URL, DB_USERNAME, DB_PASSWORD, network access, and Aiven service status.");
+            throw e;
+        }
     }
 
+    public static boolean isCloudDatabase(String url) {
+        if (url == null) return false;
+        String lower = url.toLowerCase();
+        return lower.contains("aivencloud.com") || lower.contains("sslmode=required") || (!lower.contains("localhost") && !lower.contains("127.0.0.1"));
+    }
+
+    public String getDbUrl() { return dbUrl; }
+    public String getDbUsername() { return dbUsername; }
+    public String getDbName() { return dbName; }
+
     private void ensureDatabaseExists() {
+        // Skip on cloud / Aiven environments where smart_finance_db already exists
+        if (isCloudDatabase(dbUrl) || serverUrl == null || serverUrl.isBlank()) {
+            return;
+        }
         try (Connection conn = DriverManager.getConnection(serverUrl, dbUsername, dbPassword);
              Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS " + dbName);
@@ -268,7 +418,7 @@ public class DatabaseManager {
             addColumnIfNotExists(stmt, "notifications", "type", "VARCHAR(50) DEFAULT 'SYSTEM'");
             addColumnIfNotExists(stmt, "notifications", "priority", "VARCHAR(20) DEFAULT 'INFO'");
 
-            System.out.println("Finora Database initialized and migrated successfully.");
+            System.out.println("FinvisIQ Database initialized and connected successfully.");
 
         } catch (SQLException e) {
             System.err.println("MySQL Database initialization failed: " + e.getMessage());

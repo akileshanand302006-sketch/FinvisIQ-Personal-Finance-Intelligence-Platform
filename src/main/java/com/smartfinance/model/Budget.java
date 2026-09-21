@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 /**
  * Budget Model — Category spending limits and thresholds.
- * Extended for Finora Budget System.
+ * Extended for FinvisIQ Budget System.
  */
 public class Budget {
     private int budgetId;

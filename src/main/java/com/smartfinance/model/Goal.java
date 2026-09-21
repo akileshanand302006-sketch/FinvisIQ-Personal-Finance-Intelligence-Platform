@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 /**
  * Goal model for savings goal tracking.
- * Extended for Finora with priority, category, monthly contribution & expected returns.
+ * Extended for FinvisIQ with priority, category, monthly contribution & expected returns.
  * Demonstrates: Encapsulation, OOP.
  */
 public class Goal {

@@ -19,7 +19,7 @@ import javafx.scene.text.TextAlignment;
 import java.io.InputStream;
 
 /**
- * Premium Login & Registration Controller for Finora.
+ * Premium Login & Registration Controller for FinvisIQ.
  * Includes Theme Switcher (Light/Dark mode) and Exit options.
  * Fully functional tab switching between Sign In & Registration.
  */
@@ -146,7 +146,7 @@ public class LoginController {
         Label emoji = new Label("\uD83D\uDCB0");
         emoji.setStyle("-fx-font-size: 48px;");
 
-        Label title = new Label("Finora");
+        Label title = new Label("FinvisIQ");
         title.getStyleClass().add("login-title");
 
         Label subtitle = new Label("Personal Finance Intelligence Platform");
@@ -271,7 +271,7 @@ public class LoginController {
 
         passwordPane.getChildren().addAll(passwordField, visiblePasswordField, togglePassBtn);
 
-        Button loginBtn = new Button("Sign In to Finora");
+        Button loginBtn = new Button("Sign In to FinvisIQ");
         loginBtn.getStyleClass().add("btn-primary");
         loginBtn.setMaxWidth(Double.MAX_VALUE);
         loginBtn.setId("loginBtn");

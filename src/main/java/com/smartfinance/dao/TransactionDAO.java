@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Transaction Data Access Object - CRUD and analytics queries.
- * Updated for Finora with paymentMethod support.
+ * Updated for FinvisIQ with paymentMethod support.
  * Demonstrates: JDBC, ArrayList, HashMap, List Interface.
  */
 public class TransactionDAO {

@@ -224,7 +224,7 @@ public class ProfileController {
         Label dangerTitle = new Label("Danger Zone");
         dangerTitle.setStyle("-fx-text-fill: #F87171; -fx-font-weight: bold;");
 
-        Button logoutBtn = new Button("Logout of Finora");
+        Button logoutBtn = new Button("Logout of FinvisIQ");
         logoutBtn.getStyleClass().add("btn-danger");
         logoutBtn.setMaxWidth(Double.MAX_VALUE);
         logoutBtn.setOnAction(ev -> mainController.getApp().showLoginScreen());

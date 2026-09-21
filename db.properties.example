@@ -1,0 +1,17 @@
+# ==============================================================================
+# FinvisIQ Database Configuration Template
+# ==============================================================================
+# Copy this file to set your environment variables or local configurations.
+# NEVER commit sensitive production passwords to Git.
+#
+# Production Environment Variables:
+DB_URL=jdbc:mysql://mysql-18243dae-akileshanand302006-3318.a.aivencloud.com:20218/smart_finance_db?sslMode=REQUIRED
+DB_USERNAME=avnadmin
+DB_PASSWORD=<YOUR_AIVEN_MYSQL_PASSWORD>
+
+# Properties file mapping:
+db.driver=com.mysql.cj.jdbc.Driver
+db.url=${DB_URL}
+db.username=${DB_USERNAME}
+db.password=${DB_PASSWORD}
+db.name=smart_finance_db

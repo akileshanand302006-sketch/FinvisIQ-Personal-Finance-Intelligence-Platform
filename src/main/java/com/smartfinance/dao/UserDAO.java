@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 /**
  * User Data Access Object - CRUD operations for User table.
- * Updated for Finora with user preferences, status, and extended fields.
+ * Updated for FinvisIQ with user preferences, status, and extended fields.
  * Demonstrates: JDBC, ArrayList, Exception Handling.
  */
 public class UserDAO {

@@ -65,7 +65,7 @@ public class WordReportGenerator {
         docXml.append("      <w:pPr><w:spacing w:after=\"120\"/></w:pPr>\n");
         docXml.append("      <w:r>\n");
         docXml.append("        <w:rPr><w:b/><w:sz w:val=\"44\"/><w:color w:val=\"7C3AED\"/></w:rPr>\n");
-        docXml.append("        <w:t>Finora Executive Financial &amp; Analytical Report</w:t>\n");
+        docXml.append("        <w:t>FinvisIQ Executive Financial &amp; Analytical Report</w:t>\n");
         docXml.append("      </w:r>\n");
         docXml.append("    </w:p>\n");
 
@@ -245,7 +245,7 @@ public class WordReportGenerator {
         docXml.append("      <w:pPr><w:spacing w:before=\"400\"/></w:pPr>\n");
         docXml.append("      <w:r>\n");
         docXml.append("        <w:rPr><w:i/><w:sz w:val=\"18\"/><w:color w:val=\"94A3B8\"/></w:rPr>\n");
-        docXml.append("        <w:t>Finora Personal Finance Intelligence System - Confidential Executive Analytical Statement</w:t>\n");
+        docXml.append("        <w:t>FinvisIQ Personal Finance Intelligence System - Confidential Executive Analytical Statement</w:t>\n");
         docXml.append("      </w:r>\n");
         docXml.append("    </w:p>\n");
 

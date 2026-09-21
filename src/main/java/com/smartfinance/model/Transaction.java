@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 /**
  * Transaction model for income and expense tracking.
- * Extended for Finora with paymentMethod (Cash, UPI, Debit Card, Credit Card, Bank Transfer).
+ * Extended for FinvisIQ with paymentMethod (Cash, UPI, Debit Card, Credit Card, Bank Transfer).
  * Demonstrates: Encapsulation, Java Date API.
  */
 public class Transaction {

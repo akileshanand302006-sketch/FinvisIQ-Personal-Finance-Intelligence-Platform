@@ -16,7 +16,7 @@ import javafx.scene.layout.*;
 import java.util.HashMap;
 
 /**
- * Main Application Controller — Sidebar navigation, Top Header Bar, and view management for Finora.
+ * Main Application Controller — Sidebar navigation, Top Header Bar, and view management for FinvisIQ.
  * Features ALWAYS-VISIBLE Theme Switcher (Light/Dark mode) and ALWAYS-VISIBLE Sign Out Button.
  * Demonstrates: MVC Architecture, Event Handling, HashMap.
  */
@@ -283,7 +283,7 @@ public class MainController {
         header.setAlignment(Pos.CENTER);
         header.setPadding(new Insets(24, 20, 16, 20));
 
-        Label logo = new Label("\uD83D\uDCB0 Finora");
+        Label logo = new Label("\uD83D\uDCB0 FinvisIQ");
         logo.getStyleClass().add("sidebar-logo");
 
         Label tagline = new Label("Personal Finance Intelligence");

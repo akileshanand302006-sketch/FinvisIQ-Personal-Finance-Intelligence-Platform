@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 /**
  * Goal Data Access Object - CRUD operations for goals.
- * Updated for Finora with priority, category, and monthly contributions.
+ * Updated for FinvisIQ with priority, category, and monthly contributions.
  * Demonstrates: JDBC, ArrayList, Exception Handling.
  */
 public class GoalDAO {

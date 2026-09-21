@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
- * Dashboard Controller — Main overview screen & command center for Finora.
+ * Dashboard Controller — Main overview screen & command center for FinvisIQ.
  * Demonstrates: JavaFX Charts (PieChart, LineChart), Layout, Collections.
  */
 @SuppressWarnings("unchecked")
@@ -267,7 +267,7 @@ public class DashboardController {
         suggestionsCard.getStyleClass().add("card");
         suggestionsCard.setPadding(new Insets(20));
 
-        Label aiTitle = new Label("\uD83E\uDD16 Finora Intelligence Suggestions");
+        Label aiTitle = new Label("\uD83E\uDD16 FinvisIQ Intelligence Suggestions");
         aiTitle.getStyleClass().add("section-title");
 
         ArrayList<String> suggestions = aiService.generateSuggestions(currentUser.getUserId());
