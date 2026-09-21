@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinvisIQ — Personal Finance Intelligence Platform</title>
+  <meta name="description" content="AI-Powered Smart Finance Management and Investment Advisor System. Multi-layered liquid glass fintech experience with cloud MySQL synchronization.">
+
+  <!-- Immediate Theme Pre-hydration (Prevents Dark/Light flash) -->
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('finvisiq_theme');
+        const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chart.js 4.4.2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <!-- FinvisIQ Liquid Glass Design System -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Runtime Production Environment Configuration -->
+  <script>
+    window.ENV = window.ENV || {
+      // Railway backend endpoint or fallback to dynamic resolution in api.js
+      API_URL: ''
+    };
+  </script>
+</head>
+<body>
+
+<!-- ============================================================================
+     LAYER 1 & LAYER 2: AMBIENT FINANCIAL BACKGROUND & GLOWING ORBS
+     ============================================================================ -->
+<div class="ambient-background-layer" aria-hidden="true">
+  <div class="ambient-grid-overlay"></div>
+  <div class="ambient-orb-container">
+    <div class="ambient-orb orb-primary"></div>
+    <div class="ambient-orb orb-secondary"></div>
+    <div class="ambient-orb orb-accent"></div>
+    <div class="ambient-orb orb-violet"></div>
+  </div>
+</div>
+
+<!-- ============================================================================
+     IMMERSIVE FULL-SCREEN AUTHENTICATION CONTAINER (LOGIN / REGISTER)
+     ============================================================================ -->
+<div id="auth-full-container" class="hidden">
+  <div class="auth-split-wrapper">
+    <!-- Left Brand Panel -->
+    <div class="auth-brand-side">
+      <div class="auth-brand-logo-area">
+        <div class="auth-brand-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 8.5 12 15 22 8.5 12 2"></polygon>
+            <polyline points="2 15.5 12 22 22 15.5"></polyline>
+            <polyline points="2 8.5 12 15 22 8.5"></polyline>
+          </svg>
+        </div>
+        <div>
+          <div class="auth-brand-name">FinvisIQ</div>
+          <span class="badge-pill info" style="font-size: 11px; padding: 2px 8px;">Intelligence Cloud</span>
+        </div>
+      </div>
+
+      <div class="auth-hero-content">
+        <h2 class="auth-hero-title">Your intelligent financial <span>command center.</span></h2>
+        <p class="auth-hero-desc">
+          Synthesize cashflows, monitor real-time multi-asset portfolios, simulate compound SIP trajectories, and safeguard your future with AI-driven intelligence.
+        </p>
+      </div>
+
+      <ul class="auth-feature-list">
+        <li class="auth-feature-item">
+          <div class="auth-feature-icon">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <span>Aiven Cloud MySQL 8.4.8 with Strict TLS Verification</span>
+        </li>
+        <li class="auth-feature-item">
+          <div class="auth-feature-icon">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <span>Dynamic Budget Thresholds & Health Scoring Engine</span>
+        </li>
+        <li class="auth-feature-item">
+          <div class="auth-feature-icon">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <span>True Liquid Glass System with Instant Dual Themes</span>
+        </li>
+      </ul>
+
+      <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+        <span class="db-dot"></span>
+        <span>FinvisIQ Production v1.0.0 • Connected</span>
+      </div>
+    </div>
+
+    <!-- Right Form Panel -->
+    <div class="auth-form-side">
+      <div class="auth-tabs-nav">
+        <button type="button" class="auth-tab-btn active" id="tab-sign-in">Sign In</button>
+        <button type="button" class="auth-tab-btn" id="tab-sign-up">Create Account</button>
+      </div>
+
+      <div class="auth-alert-error" id="auth-error-alert" role="alert">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="auth-error-msg">Invalid credentials. Please verify your login details.</span>
+      </div>
+
+      <form id="form-auth" autocomplete="on">
+        <div class="form-group" id="auth-name-group" style="display: none;">
+          <label class="form-label" for="auth-name">Your Full Name</label>
+          <input type="text" id="auth-name" class="form-input" placeholder="e.g. Akilesh Anand" autocomplete="name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="auth-email">Email Address or Username</label>
+          <input type="text" id="auth-email" class="form-input" placeholder="e.g. akilesh@finvisiq.com" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" for="auth-password" style="margin-bottom: 0;">Password</label>
+            <span style="font-size: 12px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px;" onclick="togglePasswordVisibility('auth-password', 'auth-pwd-toggle')">
+              <span id="auth-pwd-toggle">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </span>
+              <span id="auth-pwd-text">Show</span>
+            </span>
+          </div>
+          <input type="password" id="auth-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn-primary" id="auth-submit-btn" style="width: 100%; justify-content: center; margin-top: 14px; padding: 13px;">
+          Sign In to FinvisIQ
+        </button>
+
+        <!-- One-Click Demo Credentials Button -->
+        <button type="button" class="quick-demo-pill" onclick="fillDemoCredentials()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <span>One-Click Fill Demo (testuser@finvisiq.com)</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================================
+     LAYER 3: LIQUID GLASS APPLICATION LAYOUT
+     ============================================================================ -->
+<div class="app-layout">
+  <!-- SIDEBAR NAVIGATION DOCK -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 8.5 12 15 22 8.5 12 2"></polygon>
+          <polyline points="2 15.5 12 22 22 15.5"></polyline>
+          <polyline points="2 8.5 12 15 22 8.5"></polyline>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">FinvisIQ</div>
+        <span class="brand-badge">Financial Intelligence</span>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+      <li class="nav-item active" data-view="dashboard">
+        <a href="#dashboard">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+            </svg>
+          </span>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item" data-view="transactions">
+        <a href="#transactions">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+              <line x1="2" y1="10" x2="22" y2="10"></line>
+            </svg>
+          </span>
+          <span>Transactions</span>
+        </a>
+      </li>
+      <li class="nav-item" data-view="budgets">
+        <a href="#budgets">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+          </span>
+          <span>Budgets</span>
+        </a>
+      </li>
+      <li class="nav-item" data-view="goals">
+        <a href="#goals">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+              <path d="M4 22h16"></path>
+              <path d="M10 14.66V17c0 .55-.45 1-1 1H7"></path>
+              <path d="M14 14.66V17c0 .55.45 1 1 1h2"></path>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+            </svg>
+          </span>
+          <span>Savings Goals</span>
+        </a>
+      </li>
+      <li class="nav-item" data-view="investments">
+        <a href="#investments">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+          </span>
+          <span>Investments & SIP</span>
+        </a>
+      </li>
+      <li class="nav-item" data-view="networth">
+        <a href="#networth">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="22" x2="21" y2="22"></line>
+              <line x1="6" y1="18" x2="6" y2="11"></line>
+              <line x1="10" y1="18" x2="10" y2="11"></line>
+              <line x1="14" y1="18" x2="14" y2="11"></line>
+              <line x1="18" y1="18" x2="18" y2="11"></line>
+              <polygon points="12 2 20 7 4 7"></polygon>
+            </svg>
+          </span>
+          <span>Net Worth & Debt</span>
+        </a>
+      </li>
+      <li class="nav-item" data-view="subscriptions">
+        <a href="#subscriptions">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </span>
+          <span>Subscriptions</span>
+        </a>
+      </li>
+      <li class="nav-item" data-view="ai-advisor">
+        <a href="#ai-advisor">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path>
+            </svg>
+          </span>
+          <span>AI Intelligence</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="db-pill" id="header-db-pill">
+        <span class="db-dot"></span>
+        <span>Aiven MySQL Cloud (SSL)</span>
+      </div>
+
+      <div class="user-mini-card" onclick="openModal('modal-auth')">
+        <div class="avatar" id="user-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="user-display-name">Akilesh</div>
+          <div class="user-email" id="user-display-email">akilesh@finvisiq.com</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN WRAPPER -->
+  <div class="main-wrapper">
+    <!-- TOPBAR FLOATING GLASS HEADER -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="btn-mobile-menu" class="mobile-menu-btn btn-icon" aria-label="Open Navigation Menu">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h1 class="page-title" id="page-header-title">Financial Dashboard</h1>
+      </div>
+
+      <div class="topbar-right">
+        <!-- Health Score Badge -->
+        <div class="health-badge">
+          <span>Health Score:</span>
+          <span class="score-val" id="header-health-score">75/100</span>
+        </div>
+
+        <!-- Add Transaction CTA -->
+        <button class="btn-primary" onclick="openModal('modal-add-txn')">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Transaction</span>
+        </button>
+
+        <!-- Liquid Glass Theme Toggle Button -->
+        <button class="theme-toggle-capsule" id="theme-toggle-btn" title="Toggle Light / Dark Theme" aria-label="Toggle Theme" onclick="toggleTheme()">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <!-- API Backend Settings -->
+        <button class="btn-icon" title="API Backend Settings" aria-label="Backend API Settings" onclick="openModal('modal-api-settings')">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+
+        <!-- Logout Action Button -->
+        <button class="btn-icon" title="Sign Out" aria-label="Sign Out" onclick="window.api.logout()">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT VIEW AREA -->
+    <main class="page-container">
+
+      <!-- ====================================================================
+           1. DASHBOARD VIEW
+           ==================================================================== -->
+      <section id="view-dashboard" class="view-section active">
+        <!-- Greeting Banner -->
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 id="dash-greeting-title" style="font-family: var(--font-display); font-size: 1.55rem; font-weight: 800; color: var(--text-pure); letter-spacing: -0.02em;">
+              Welcome to FinvisIQ Command Center
+            </h2>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px;">
+              Real-time telemetry and cashflow intelligence synchronized with Aiven Cloud MySQL.
+            </p>
+          </div>
+          <div class="badge-pill info" id="dash-live-date" style="font-size: 12px; padding: 6px 14px;">
+            Today
+          </div>
+        </div>
+
+        <!-- Stat Cards Grid -->
+        <div class="stats-grid">
+          <div class="stat-widget income">
+            <div class="stat-top">
+              <span class="stat-label">Total Income</span>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="17" x2="17" y2="7"></line>
+                  <polyline points="7 7 17 7 17 17"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value tabular-num" id="dash-income">₹0</div>
+            <div class="stat-subtext">
+              <span class="badge-pill success">Cloud Synced</span>
+            </div>
+          </div>
+
+          <div class="stat-widget expense">
+            <div class="stat-top">
+              <span class="stat-label">Total Expenses</span>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="7" x2="17" y2="17"></line>
+                  <polyline points="17 7 17 17 7 17"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value tabular-num" id="dash-expense">₹0</div>
+            <div class="stat-subtext">
+              <span class="badge-pill danger">All Categories</span>
+            </div>
+          </div>
+
+          <div class="stat-widget networth">
+            <div class="stat-top">
+              <span class="stat-label">Total Net Worth</span>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="3" y1="22" x2="21" y2="22"></line>
+                  <line x1="6" y1="18" x2="6" y2="11"></line>
+                  <line x1="10" y1="18" x2="10" y2="11"></line>
+                  <line x1="14" y1="18" x2="14" y2="11"></line>
+                  <line x1="18" y1="18" x2="18" y2="11"></line>
+                  <polygon points="12 2 20 7 4 7"></polygon>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value tabular-num" id="dash-networth">₹0</div>
+            <div class="stat-subtext">
+              <span class="badge-pill info">Assets − Liabilities</span>
+            </div>
+          </div>
+
+          <div class="stat-widget savings">
+            <div class="stat-top">
+              <span class="stat-label">Savings Rate</span>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value tabular-num" id="dash-savings-rate">0%</div>
+            <div class="stat-subtext">
+              <span class="badge-pill success">Target 30%+</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Grid: Cashflow Overview & Category Donut -->
+        <div class="charts-grid" style="margin-top: 24px;">
+          <!-- Cashflow Overview Bar Chart -->
+          <div class="glass-card">
+            <div class="glass-card-header">
+              <div>
+                <h2 class="glass-card-title">Cashflow Overview</h2>
+                <div class="glass-card-subtitle">Income vs Expenses vs Net Savings</div>
+              </div>
+              <span class="badge-pill success">Real-time</span>
+            </div>
+            <div class="chart-box" style="position: relative; height: 260px;">
+              <canvas id="chart-income-expense"></canvas>
+            </div>
+          </div>
+
+          <!-- Category Spending Breakdown -->
+          <div class="glass-card">
+            <div class="glass-card-header">
+              <div>
+                <h2 class="glass-card-title">Expense Distribution</h2>
+                <div class="glass-card-subtitle">Spending breakdown by category</div>
+              </div>
+              <span class="badge-pill info">Current Period</span>
+            </div>
+            <div class="chart-box" style="position: relative; height: 260px;">
+              <canvas id="chart-category-donut"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Quick Advisory Callout -->
+        <div class="glass-card" style="margin-top: 24px; border-color: rgba(139, 92, 246, 0.28);">
+          <div class="glass-card-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="stat-icon" style="background: rgba(139, 92, 246, 0.15); color: var(--primary);">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path>
+                </svg>
+              </div>
+              <h2 class="glass-card-title">AI Financial Intelligence Briefing</h2>
+            </div>
+            <button class="btn-secondary" style="padding: 6px 14px; font-size: 12px;" onclick="switchView('ai-advisor')">
+              View Full Insights &rarr;
+            </button>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6;">
+            FinvisIQ continuously monitors your cashflow velocity, budget burn rates, and asset diversification.
+            Maintain at least <strong>6 months of expenses</strong> in a liquid emergency reserve to safeguard against unexpected shocks.
+          </p>
+        </div>
+
+        <!-- Recent Transactions Table Card -->
+        <div class="glass-card" style="margin-top: 24px;">
+          <div class="glass-card-header">
+            <div>
+              <h2 class="glass-card-title">Recent Transactions</h2>
+              <div class="glass-card-subtitle">Latest recorded entries from your accounts</div>
+            </div>
+            <button class="btn-secondary" style="padding: 6px 14px; font-size: 12px;" onclick="switchView('transactions')">
+              View Full Ledger &rarr;
+            </button>
+          </div>
+          <div class="table-container">
+            <table class="glass-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Payment</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody id="dash-recent-txns-body">
+                <!-- Dynamically populated via app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           2. TRANSACTIONS LEDGER VIEW
+           ==================================================================== -->
+      <section id="view-transactions" class="view-section" style="display: none;">
+        <div class="glass-card">
+          <div class="glass-card-header">
+            <div>
+              <h2 class="glass-card-title">Transactions Ledger</h2>
+              <div class="glass-card-subtitle">Recorded entries across all connected accounts and cards</div>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-add-txn')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>New Transaction</span>
+            </button>
+          </div>
+
+          <!-- Search and Filter Toolbar -->
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+            <div style="position: relative;">
+              <input type="text" id="search-txn-input" class="form-input" placeholder="Search description, category, payment method..." style="padding-left: 36px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+            <select id="filter-txn-type" class="form-select">
+              <option value="ALL">All Types</option>
+              <option value="INCOME">Income Only</option>
+              <option value="EXPENSE">Expense Only</option>
+            </select>
+            <select id="filter-txn-category" class="form-select">
+              <option value="ALL">All Categories</option>
+            </select>
+          </div>
+
+          <div class="table-container">
+            <table class="glass-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Method</th>
+                  <th>Amount</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="txns-table-body">
+                <!-- Dynamically populated via app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           3. BUDGETS VIEW
+           ==================================================================== -->
+      <section id="view-budgets" class="view-section" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-family: var(--font-display); font-size: 1.45rem; font-weight: 800; color: var(--text-pure);">Category Spending Limits</h2>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 3px;">
+              Proactive budget guardrails with automatic threshold warnings at 80% capacity.
+            </p>
+          </div>
+          <button class="btn-primary" onclick="openModal('modal-add-budget')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Set Budget</span>
+          </button>
+        </div>
+
+        <div class="budget-grid" id="budgets-grid">
+          <!-- Dynamically populated via app.js -->
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           4. SAVINGS GOALS VIEW
+           ==================================================================== -->
+      <section id="view-goals" class="view-section" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-family: var(--font-display); font-size: 1.45rem; font-weight: 800; color: var(--text-pure);">Savings Goals</h2>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 3px;">
+              Track milestones, target deadlines, and progress toward financial freedom.
+            </p>
+          </div>
+          <button class="btn-primary" onclick="openModal('modal-add-goal')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>New Goal</span>
+          </button>
+        </div>
+
+        <div class="goals-grid" id="goals-grid">
+          <!-- Dynamically populated via app.js -->
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           5. INVESTMENTS & SIP CALCULATOR VIEW
+           ==================================================================== -->
+      <section id="view-investments" class="view-section" style="display: none;">
+        <div class="glass-card" style="margin-bottom: 24px;">
+          <div class="glass-card-header">
+            <div>
+              <h2 class="glass-card-title">Interactive SIP Calculator</h2>
+              <div class="glass-card-subtitle">Simulate compound returns on monthly Systematic Investment Plans</div>
+            </div>
+            <span class="badge-pill success">Compound Growth</span>
+          </div>
+
+          <div class="sip-grid">
+            <div>
+              <div class="range-slider-group">
+                <div class="range-header">
+                  <span>Monthly Investment</span>
+                  <span style="color: var(--primary);" id="sip-monthly-label">₹5,000</span>
+                </div>
+                <input type="range" id="sip-monthly" class="range-slider" min="500" max="100000" step="500" value="5000">
+              </div>
+
+              <div class="range-slider-group">
+                <div class="range-header">
+                  <span>Expected Annual Return (% p.a.)</span>
+                  <span style="color: var(--accent-cyan);" id="sip-rate-label">12%</span>
+                </div>
+                <input type="range" id="sip-rate" class="range-slider" min="1" max="30" step="0.5" value="12">
+              </div>
+
+              <div class="range-slider-group">
+                <div class="range-header">
+                  <span>Time Horizon (Years)</span>
+                  <span style="color: var(--success);" id="sip-years-label">10 Years</span>
+                </div>
+                <input type="range" id="sip-years" class="range-slider" min="1" max="35" step="1" value="10">
+              </div>
+
+              <div class="sip-summary-box">
+                <div class="sip-stat-row">
+                  <span style="color: var(--text-secondary); font-size: 13px;">Total Invested:</span>
+                  <strong class="tabular-num" id="sip-invested-val">₹6,00,000</strong>
+                </div>
+                <div class="sip-stat-row">
+                  <span style="color: var(--text-secondary); font-size: 13px;">Estimated Wealth Gain:</span>
+                  <strong class="tabular-num" style="color: var(--success);" id="sip-returns-val">₹5,61,695</strong>
+                </div>
+                <div class="sip-stat-row">
+                  <span style="color: var(--text-pure); font-size: 14px; font-weight: 700;">Expected Corpus:</span>
+                  <span class="sip-stat-total tabular-num" id="sip-maturity-val">₹11,61,695</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="chart-sip"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Portfolio Table Card -->
+        <div class="glass-card">
+          <div class="glass-card-header">
+            <div>
+              <h2 class="glass-card-title">Investment Portfolio</h2>
+              <div class="glass-card-subtitle">Logged investments across Mutual Funds, Stocks, and Fixed Deposits</div>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-add-invest')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Add Investment</span>
+            </button>
+          </div>
+
+          <div class="table-container">
+            <table class="glass-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Return Rate</th>
+                  <th>Start Date</th>
+                </tr>
+              </thead>
+              <tbody id="invest-table-body">
+                <!-- Dynamically populated via app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           6. NET WORTH & DEBT VIEW
+           ==================================================================== -->
+      <section id="view-networth" class="view-section" style="display: none;">
+        <div class="stats-grid" style="margin-bottom: 24px;">
+          <div class="stat-widget networth">
+            <div class="stat-top">
+              <span class="stat-label">Total Assets</span>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                  <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value tabular-num" id="nw-total-assets">₹0</div>
+          </div>
+
+          <div class="stat-widget expense">
+            <div class="stat-top">
+              <span class="stat-label">Total Liabilities</span>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                  <polyline points="17 18 23 18 23 12"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value tabular-num" id="nw-total-liabilities">₹0</div>
+          </div>
+
+          <div class="stat-widget income">
+            <div class="stat-top">
+              <span class="stat-label">Net Balance</span>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                  <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                  <path d="M7 21h10"></path>
+                  <path d="M12 3v18"></path>
+                  <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value tabular-num" id="nw-net-worth">₹0</div>
+          </div>
+
+          <div class="stat-widget savings">
+            <div class="stat-top">
+              <span class="stat-label">Debt-to-Asset Ratio</span>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <polyline points="9 12 11 14 15 10"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value tabular-num" id="nw-debt-ratio">0%</div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <!-- Assets Card -->
+          <div class="glass-card">
+            <div class="glass-card-header">
+              <h2 class="glass-card-title">Assets</h2>
+              <button class="btn-secondary" style="padding: 6px 14px; font-size: 12px;" onclick="openModal('modal-add-asset')">+ Add Asset</button>
+            </div>
+            <div class="table-container">
+              <table class="glass-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="assets-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Liabilities Card -->
+          <div class="glass-card">
+            <div class="glass-card-header">
+              <h2 class="glass-card-title">Liabilities & Loans</h2>
+              <button class="btn-secondary" style="padding: 6px 14px; font-size: 12px;" onclick="openModal('modal-add-liability')">+ Add Loan</button>
+            </div>
+            <div class="table-container">
+              <table class="glass-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Principal</th>
+                    <th>Remaining</th>
+                    <th>EMI</th>
+                    <th>Rate</th>
+                  </tr>
+                </thead>
+                <tbody id="liabilities-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           7. SUBSCRIPTIONS VIEW
+           ==================================================================== -->
+      <section id="view-subscriptions" class="view-section" style="display: none;">
+        <div class="glass-card">
+          <div class="glass-card-header">
+            <div>
+              <h2 class="glass-card-title">Recurring Subscriptions & Memberships</h2>
+              <div class="glass-card-subtitle">
+                Monthly recurring commitment: <strong style="color: var(--danger);" class="tabular-num" id="subs-monthly-total">₹0</strong>
+              </div>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-add-sub')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Add Subscription</span>
+            </button>
+          </div>
+
+          <div class="table-container">
+            <table class="glass-table">
+              <thead>
+                <tr>
+                  <th>Service</th>
+                  <th>Amount</th>
+                  <th>Billing Cycle</th>
+                  <th>Next Date</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="subs-table-body">
+                <!-- Dynamically populated via app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           8. AI FINANCIAL ADVISOR VIEW
+           ==================================================================== -->
+      <section id="view-ai-advisor" class="view-section" style="display: none;">
+        <div class="glass-card" style="margin-bottom: 24px;">
+          <div class="glass-card-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="stat-icon" style="background: rgba(139, 92, 246, 0.15); color: var(--primary);">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="glass-card-title">Real-Time Financial Intelligence Engine</h2>
+                <div class="glass-card-subtitle">Synthesizes cashflow patterns, emergency funds, debt ratios, and budget anomalies.</div>
+              </div>
+            </div>
+            <span class="badge-pill success">Engine Active</span>
+          </div>
+
+          <div class="ai-cards-list" id="ai-insights-list">
+            <!-- Dynamically populated AI insight cards -->
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="glass-card-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="stat-icon" style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan);">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </div>
+              <h2 class="glass-card-title">Strategic Wealth Recommendations</h2>
+            </div>
+          </div>
+          <ul id="ai-suggestions-list" style="list-style: none;">
+            <!-- Dynamically populated suggestions -->
+          </ul>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================================
+     MOBILE BOTTOM NAVIGATION BAR
+     ============================================================================ -->
+<nav class="mobile-nav-bottom" aria-label="Mobile Navigation">
+  <div class="mobile-nav-items">
+    <a href="#dashboard" class="mobile-nav-item active" data-view="dashboard">
+      <span class="icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+          <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+          <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+          <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+        </svg>
+      </span>
+      <span>Dashboard</span>
+    </a>
+    <a href="#transactions" class="mobile-nav-item" data-view="transactions">
+      <span class="icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+          <line x1="2" y1="10" x2="22" y2="10"></line>
+        </svg>
+      </span>
+      <span>Ledger</span>
+    </a>
+    <a href="#budgets" class="mobile-nav-item" data-view="budgets">
+      <span class="icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="6"></circle>
+          <circle cx="12" cy="12" r="2"></circle>
+        </svg>
+      </span>
+      <span>Budgets</span>
+    </a>
+    <a href="#investments" class="mobile-nav-item" data-view="investments">
+      <span class="icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+          <polyline points="17 6 23 6 23 12"></polyline>
+        </svg>
+      </span>
+      <span>SIP</span>
+    </a>
+    <a href="#ai-advisor" class="mobile-nav-item" data-view="ai-advisor">
+      <span class="icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path>
+        </svg>
+      </span>
+      <span>AI</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================================
+     LIQUID GLASS MODAL DIALOGS
+     ============================================================================ -->
+
+<!-- 1. Add Transaction Modal -->
+<div class="modal-backdrop" id="modal-add-txn" role="dialog" aria-modal="true" aria-labelledby="modal-txn-title">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-txn-title">Record Transaction</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-txn')" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <form id="form-add-txn">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="txn-type">Transaction Type</label>
+          <select id="txn-type" class="form-select" required>
+            <option value="EXPENSE">Expense</option>
+            <option value="INCOME">Income</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="txn-amount">Amount (₹)</label>
+          <input type="number" id="txn-amount" class="form-input" placeholder="e.g. 1500" step="0.01" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="txn-category">Category</label>
+          <select id="txn-category" class="form-select" required>
+            <option value="Food & Dining">Food & Dining</option>
+            <option value="Groceries">Groceries</option>
+            <option value="Salary">Salary</option>
+            <option value="Freelance">Freelance</option>
+            <option value="Rent & Housing">Rent & Housing</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Health & Medical">Health & Medical</option>
+            <option value="Investment">Investment</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="txn-date">Date</label>
+          <input type="date" id="txn-date" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="txn-payment">Payment Method</label>
+          <select id="txn-payment" class="form-select">
+            <option value="UPI">UPI / GPay / PhonePe</option>
+            <option value="Credit Card">Credit Card</option>
+            <option value="Debit Card">Debit Card</option>
+            <option value="Net Banking">Net Banking</option>
+            <option value="Cash">Cash</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="txn-desc">Description</label>
+          <input type="text" id="txn-desc" class="form-input" placeholder="e.g. Dinner with colleagues">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-add-txn')">Cancel</button>
+        <button type="submit" class="btn-primary">Save to Cloud</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 2. Set Budget Modal -->
+<div class="modal-backdrop" id="modal-add-budget" role="dialog" aria-modal="true" aria-labelledby="modal-budget-title">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-budget-title">Set Category Budget</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-budget')" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <form id="form-add-budget">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="budget-category">Category</label>
+          <select id="budget-category" class="form-select" required>
+            <option value="Food & Dining">Food & Dining</option>
+            <option value="Groceries">Groceries</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Travel">Travel</option>
+            <option value="General">General</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="budget-amount">Monthly Limit (₹)</label>
+          <input type="number" id="budget-amount" class="form-input" placeholder="e.g. 15000" min="100" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="budget-period">Period</label>
+          <select id="budget-period" class="form-select">
+            <option value="MONTHLY">Monthly</option>
+            <option value="YEARLY">Yearly</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="budget-threshold">Warning Threshold (%)</label>
+          <input type="number" id="budget-threshold" class="form-input" value="80" min="10" max="100">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-add-budget')">Cancel</button>
+        <button type="submit" class="btn-primary">Set Budget</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 3. Add Goal Modal -->
+<div class="modal-backdrop" id="modal-add-goal" role="dialog" aria-modal="true" aria-labelledby="modal-goal-title">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-goal-title">Create Savings Goal</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-goal')" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <form id="form-add-goal">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="goal-name">Goal Name</label>
+          <input type="text" id="goal-name" class="form-input" placeholder="e.g. Vacation to Europe" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goal-target">Target Amount (₹)</label>
+          <input type="number" id="goal-target" class="form-input" placeholder="e.g. 150000" min="500" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goal-saved">Initial Saved Amount (₹)</label>
+          <input type="number" id="goal-saved" class="form-input" placeholder="e.g. 20000" value="0">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goal-deadline">Target Deadline</label>
+          <input type="date" id="goal-deadline" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goal-priority">Priority</label>
+          <select id="goal-priority" class="form-select">
+            <option value="HIGH">High Priority</option>
+            <option value="MEDIUM" selected>Medium Priority</option>
+            <option value="LOW">Low Priority</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goal-category">Goal Category</label>
+          <input type="text" id="goal-category" class="form-input" placeholder="Emergency, Travel, House" value="General">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goal-monthly">Planned Monthly Contribution (₹)</label>
+          <input type="number" id="goal-monthly" class="form-input" placeholder="e.g. 5000" value="0">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goal-return">Expected Return (% p.a.)</label>
+          <input type="number" id="goal-return" class="form-input" placeholder="e.g. 7.0" value="7.0">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-add-goal')">Cancel</button>
+        <button type="submit" class="btn-primary">Create Goal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 4. Goal Contribute Modal -->
+<div class="modal-backdrop" id="modal-goal-contribute" role="dialog" aria-modal="true" aria-labelledby="modal-contrib-title">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-contrib-title">Contribute to Goal</h3>
+      <button class="modal-close" onclick="closeModal('modal-goal-contribute')" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <form id="form-contribute-goal">
+      <input type="hidden" id="contribute-goal-id">
+      <div class="modal-body">
+        <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 14px;">
+          Add savings deposit to: <strong id="contribute-goal-name" style="color: var(--accent-cyan);">Goal</strong>
+        </p>
+        <div class="form-group">
+          <label class="form-label" for="contribute-amount">Contribution Amount (₹)</label>
+          <input type="number" id="contribute-amount" class="form-input" placeholder="e.g. 5000" min="1" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-goal-contribute')">Cancel</button>
+        <button type="submit" class="btn-primary">Deposit Funds</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 5. Add Investment Modal -->
+<div class="modal-backdrop" id="modal-add-invest" role="dialog" aria-modal="true" aria-labelledby="modal-invest-title">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-invest-title">Add Investment</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-invest')" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <form id="form-add-invest">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="invest-name">Investment Name</label>
+          <input type="text" id="invest-name" class="form-input" placeholder="e.g. Nifty 50 Index Fund">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="invest-type">Asset Type</label>
+          <select id="invest-type" class="form-select" required>
+            <option value="MUTUAL_FUND">Mutual Fund</option>
+            <option value="STOCKS">Equity / Stocks</option>
+            <option value="SIP">Systematic Investment Plan (SIP)</option>
+            <option value="FIXED_DEPOSIT">Fixed Deposit (FD)</option>
+            <option value="PPF">Public Provident Fund (PPF)</option>
+            <option value="GOLD">Digital Gold / Sovereign Bond</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="invest-amount">Principal / Invested Amount (₹)</label>
+          <input type="number" id="invest-amount" class="form-input" placeholder="e.g. 25000" min="100" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="invest-rate">Expected Return (% p.a.)</label>
+          <input type="number" id="invest-rate" class="form-input" placeholder="e.g. 12.0" step="0.1" value="12.0">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="invest-date">Start Date</label>
+          <input type="date" id="invest-date" class="form-input" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-add-invest')">Cancel</button>
+        <button type="submit" class="btn-primary">Add to Portfolio</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 6. Add Asset Modal -->
+<div class="modal-backdrop" id="modal-add-asset" role="dialog" aria-modal="true" aria-labelledby="modal-asset-title">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-asset-title">Add Asset</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-asset')" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <form id="form-add-asset">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="asset-name">Asset Name</label>
+          <input type="text" id="asset-name" class="form-input" placeholder="e.g. HDFC Savings Account, Gold, Apartment" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="asset-type">Asset Type</label>
+          <select id="asset-type" class="form-select" required>
+            <option value="CASH">Cash / Bank Balance</option>
+            <option value="REAL_ESTATE">Real Estate</option>
+            <option value="EQUITY">Stocks & Equity</option>
+            <option value="PRECIOUS_METALS">Gold / Silver</option>
+            <option value="VEHICLE">Vehicle</option>
+            <option value="OTHER">Other Asset</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="asset-val">Estimated Valuation (₹)</label>
+          <input type="number" id="asset-val" class="form-input" placeholder="e.g. 500000" min="1" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="asset-notes">Notes</label>
+          <input type="text" id="asset-notes" class="form-input" placeholder="e.g. Primary emergency reserve">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-add-asset')">Cancel</button>
+        <button type="submit" class="btn-primary">Save Asset</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 7. Add Liability / Loan Modal -->
+<div class="modal-backdrop" id="modal-add-liability" role="dialog" aria-modal="true" aria-labelledby="modal-liab-title">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-liab-title">Add Liability / Loan</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-liability')" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <form id="form-add-liability">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="liab-name">Loan / Debt Name</label>
+          <input type="text" id="liab-name" class="form-input" placeholder="e.g. Home Loan, Education Loan" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="liab-principal">Original Principal (₹)</label>
+          <input type="number" id="liab-principal" class="form-input" placeholder="e.g. 2000000" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="liab-remaining">Remaining Balance (₹)</label>
+          <input type="number" id="liab-remaining" class="form-input" placeholder="e.g. 1650000" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="liab-emi">Monthly EMI (₹)</label>
+          <input type="number" id="liab-emi" class="form-input" placeholder="e.g. 21000" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="liab-rate">Interest Rate (% p.a.)</label>
+          <input type="number" id="liab-rate" class="form-input" placeholder="e.g. 8.5" step="0.1" value="8.5">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-add-liability')">Cancel</button>
+        <button type="submit" class="btn-primary">Save Loan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 8. Add Subscription Modal -->
+<div class="modal-backdrop" id="modal-add-sub" role="dialog" aria-modal="true" aria-labelledby="modal-sub-title">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-sub-title">Track Recurring Subscription</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-sub')" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <form id="form-add-sub">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="sub-name">Service / Platform Name</label>
+          <input type="text" id="sub-name" class="form-input" placeholder="e.g. Netflix Premium" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="sub-amount">Renewal Cost (₹)</label>
+          <input type="number" id="sub-amount" class="form-input" placeholder="e.g. 649" min="1" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="sub-cycle">Billing Frequency</label>
+          <select id="sub-cycle" class="form-select">
+            <option value="MONTHLY">Monthly</option>
+            <option value="YEARLY">Yearly</option>
+            <option value="QUARTERLY">Quarterly</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="sub-date">Next Billing Date</label>
+          <input type="date" id="sub-date" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="sub-cat">Category</label>
+          <input type="text" id="sub-cat" class="form-input" placeholder="e.g. Entertainment, SaaS, Fitness" value="Entertainment">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-add-sub')">Cancel</button>
+        <button type="submit" class="btn-primary">Save Subscription</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 9. API Backend URL Settings Modal -->
+<div class="modal-backdrop" id="modal-api-settings" role="dialog" aria-modal="true" aria-labelledby="modal-settings-title">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-settings-title">Backend API Configuration</h3>
+      <button class="modal-close" onclick="closeModal('modal-api-settings')" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+        Connect this frontend to your live Railway Spring Boot backend or local development server:
+      </p>
+      <div class="form-group">
+        <label class="form-label" for="config-api-url">API Base URL</label>
+        <input type="text" id="config-api-url" class="form-input" placeholder="https://<your-railway-app>.up.railway.app">
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 8px;">
+        <button type="button" class="btn-secondary" style="font-size: 12px; padding: 6px 10px;" onclick="document.getElementById('config-api-url').value = 'http://localhost:8085'">Set Local (8085)</button>
+        <button type="button" class="btn-secondary" style="font-size: 12px; padding: 6px 10px;" onclick="document.getElementById('config-api-url').value = 'https://finvisiq-backend-production.up.railway.app'">Set Railway Prod</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" onclick="closeModal('modal-api-settings')">Cancel</button>
+      <button type="button" class="btn-primary" onclick="saveApiUrlConfig()">Save & Reconnect</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function saveApiUrlConfig() {
+    const val = document.getElementById('config-api-url').value.trim();
+    if (val) {
+      localStorage.setItem('finvisiq_api_url', val);
+    } else {
+      localStorage.removeItem('finvisiq_api_url');
+    }
+    showToast('Backend URL updated! Reconnecting...', 'success');
+    closeModal('modal-api-settings');
+    pollDbHealth();
+    loadViewData(state.activeView);
+  }
+
+  // Populate input on open
+  document.getElementById('modal-api-settings')?.addEventListener('click', () => {
+    document.getElementById('config-api-url').value = window.api.getBaseUrl();
+  });
+</script>
+
+<!-- Toast Notification Container -->
+<div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+<!-- Application Controller Scripts -->
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

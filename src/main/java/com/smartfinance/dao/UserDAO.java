@@ -18,6 +18,20 @@ public class UserDAO {
     }
 
     public int insert(User user) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            User registered = com.smartfinance.api.ApiClient.getInstance().register(
+                    user.getName(),
+                    user.getEmail(),
+                    user.getPassword(),
+                    user.getRole() != null ? user.getRole() : "USER",
+                    user.getAge() > 0 ? user.getAge() : 25
+            );
+            if (registered != null) {
+                user.setUserId(registered.getUserId());
+                return registered.getUserId();
+            }
+            return -1;
+        }
         String sql = "INSERT INTO users (name, email, password, role, age, phone, currency, income_range, created_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -47,6 +61,13 @@ public class UserDAO {
 
     /** Find user by email. */
     public User findByEmail(String email) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            User cur = com.smartfinance.api.ApiClient.getInstance().getAuthenticatedUser();
+            if (cur != null && cur.getEmail() != null && cur.getEmail().equalsIgnoreCase(email)) {
+                return cur;
+            }
+            return null;
+        }
         String sql = "SELECT * FROM users WHERE email = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -63,6 +84,13 @@ public class UserDAO {
 
     /** Find user by name (username). */
     public User findByName(String name) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            User cur = com.smartfinance.api.ApiClient.getInstance().getAuthenticatedUser();
+            if (cur != null && cur.getName() != null && cur.getName().equalsIgnoreCase(name)) {
+                return cur;
+            }
+            return null;
+        }
         String sql = "SELECT * FROM users WHERE name = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -79,6 +107,13 @@ public class UserDAO {
 
     /** Find user by ID. */
     public User findById(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            User cur = com.smartfinance.api.ApiClient.getInstance().getAuthenticatedUser();
+            if (cur != null && cur.getUserId() == userId) {
+                return cur;
+            }
+            return null;
+        }
         String sql = "SELECT * FROM users WHERE user_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -96,6 +131,13 @@ public class UserDAO {
     /** Get all users (ArrayList). */
     public ArrayList<User> findAll() {
         ArrayList<User> users = new ArrayList<>();
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            User cur = com.smartfinance.api.ApiClient.getInstance().getAuthenticatedUser();
+            if (cur != null) {
+                users.add(cur);
+            }
+            return users;
+        }
         String sql = "SELECT * FROM users ORDER BY user_id";
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
@@ -110,6 +152,9 @@ public class UserDAO {
     }
 
     public boolean update(User user) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().updateProfile(user);
+        }
         String sql = "UPDATE users SET name=?, email=?, password=?, role=?, age=?, phone=?, currency=?, income_range=?, status=? WHERE user_id=?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -132,6 +177,9 @@ public class UserDAO {
 
     /** Delete user by ID. */
     public boolean delete(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return true;
+        }
         String sql = "DELETE FROM users WHERE user_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -145,6 +193,9 @@ public class UserDAO {
 
     /** Check if email already exists. */
     public boolean emailExists(String email) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return false;
+        }
         String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -161,6 +212,9 @@ public class UserDAO {
 
     /** Get total user count. */
     public int getUserCount() {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return 1;
+        }
         String sql = "SELECT COUNT(*) FROM users";
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();

@@ -26,6 +26,14 @@ public class AuthService {
             return null;
         }
 
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            User user = com.smartfinance.api.ApiClient.getInstance().login(username, password);
+            if (user != null) {
+                this.currentUser = user;
+            }
+            return user;
+        }
+
         User user = userDAO.findByName(username.trim());
         if (user == null) {
             // Also try email login fallback
@@ -58,6 +66,14 @@ public class AuthService {
         if (password == null || password.length() < 4) return null;
         if (age < 18 || age > 100) return null;
 
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            User user = com.smartfinance.api.ApiClient.getInstance().register(name, email, password, role, age);
+            if (user != null) {
+                this.currentUser = user;
+            }
+            return user;
+        }
+
         String cleanEmail = email.trim().toLowerCase();
 
         if (userDAO.emailExists(cleanEmail)) {
@@ -81,6 +97,9 @@ public class AuthService {
 
     /** Logout - clear current user. */
     public void logout() {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            com.smartfinance.api.ApiClient.getInstance().logout();
+        }
         this.currentUser = null;
     }
 
@@ -96,6 +115,9 @@ public class AuthService {
 
     /** Update user profile. */
     public boolean updateProfile(User user) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().updateProfile(user);
+        }
         return userDAO.update(user);
     }
 }

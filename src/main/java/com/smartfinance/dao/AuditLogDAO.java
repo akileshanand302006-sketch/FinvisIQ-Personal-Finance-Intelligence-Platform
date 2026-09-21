@@ -16,6 +16,9 @@ public class AuditLogDAO {
     }
 
     public int insert(AuditLog log) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return 1;
+        }
         String sql = "INSERT INTO audit_logs (user_id, action, description, timestamp) VALUES (?, ?, ?, ?)";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -39,6 +42,9 @@ public class AuditLogDAO {
 
     public ArrayList<AuditLog> findAll() {
         ArrayList<AuditLog> list = new ArrayList<>();
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return list;
+        }
         String sql = "SELECT * FROM audit_logs ORDER BY log_id DESC";
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();

@@ -36,11 +36,11 @@ public class PdfReportGenerator {
         ArrayList<Subscription> subscriptions = subscriptionDAO.findByUserId(userId);
         ArrayList<Goal> goals = goalDAO.findByUserId(userId);
 
-        double totalIncome = txns.stream().filter(Transaction::isIncome).mapToDouble(Transaction::getAmount).sum();
-        double totalExpenses = txns.stream().filter(Transaction::isExpense).mapToDouble(Transaction::getAmount).sum();
+        double totalIncome = txns.stream().filter(t -> t != null && t.isIncome()).mapToDouble(t -> t.getAmount()).sum();
+        double totalExpenses = txns.stream().filter(t -> t != null && t.isExpense()).mapToDouble(t -> t.getAmount()).sum();
         double netSavings = totalIncome - totalExpenses;
         double savingsRate = totalIncome > 0 ? (netSavings / totalIncome) * 100.0 : 0;
-        double monthlySubCost = subscriptions.stream().mapToDouble(Subscription::getAmount).sum();
+        double monthlySubCost = subscriptions.stream().filter(s -> s != null).mapToDouble(s -> s.getAmount()).sum();
 
         // Calculate Category Breakdown Analytics
         Map<String, Double> categoryExpenses = new HashMap<>();

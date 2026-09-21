@@ -15,6 +15,9 @@ public class LiabilityDAO {
     }
 
     public int insert(Liability item) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().createLiability(item);
+        }
         String sql = "INSERT INTO liabilities (user_id, name, principal, interest_rate, tenure_months, emi, remaining_balance, due_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -41,6 +44,9 @@ public class LiabilityDAO {
     }
 
     public ArrayList<Liability> findByUserId(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().getLiabilities(userId);
+        }
         ArrayList<Liability> list = new ArrayList<>();
         String sql = "SELECT * FROM liabilities WHERE user_id = ?";
         try (Connection conn = dbManager.getConnection();
@@ -54,6 +60,21 @@ public class LiabilityDAO {
             System.err.println("Error fetching liabilities: " + e.getMessage());
         }
         return list;
+    }
+
+    public Liability findById(int liabilityId) {
+        String sql = "SELECT * FROM liabilities WHERE liability_id = ?";
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, liabilityId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return mapRow(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching liability by id: " + e.getMessage());
+        }
+        return null;
     }
 
     public boolean update(Liability item) {

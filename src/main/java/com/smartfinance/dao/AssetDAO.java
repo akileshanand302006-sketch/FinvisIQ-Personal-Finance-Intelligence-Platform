@@ -15,6 +15,9 @@ public class AssetDAO {
     }
 
     public int insert(Asset asset) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().createAsset(asset);
+        }
         String sql = "INSERT INTO assets (user_id, name, type, value, notes) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -38,6 +41,9 @@ public class AssetDAO {
     }
 
     public ArrayList<Asset> findByUserId(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().getAssets(userId);
+        }
         ArrayList<Asset> list = new ArrayList<>();
         String sql = "SELECT * FROM assets WHERE user_id = ?";
         try (Connection conn = dbManager.getConnection();
@@ -51,6 +57,21 @@ public class AssetDAO {
             System.err.println("Error fetching assets: " + e.getMessage());
         }
         return list;
+    }
+
+    public Asset findById(int assetId) {
+        String sql = "SELECT * FROM assets WHERE asset_id = ?";
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, assetId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return mapRow(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching asset by id: " + e.getMessage());
+        }
+        return null;
     }
 
     public boolean update(Asset asset) {

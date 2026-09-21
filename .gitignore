@@ -25,12 +25,13 @@ Thumbs.db
 *.env
 .env.*
 
-# Database credentials
-application.properties
+# Database credentials & local configs
+!src/main/resources/application.properties
 database.properties
 config.properties
 application-local.properties
 db.properties.local
+*.local.properties
 
 # Generated reports
 reports/generated/

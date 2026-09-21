@@ -21,6 +21,9 @@ public class TransactionDAO {
 
     /** Insert a new transaction. */
     public int insert(Transaction txn) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().createTransaction(txn);
+        }
         String sql = "INSERT INTO transactions (user_id, amount, type, category, date, description, payment_method) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -47,6 +50,9 @@ public class TransactionDAO {
 
     /** Get all transactions for a user (ArrayList). */
     public ArrayList<Transaction> findByUserId(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().getTransactions(userId);
+        }
         ArrayList<Transaction> transactions = new ArrayList<>();
         String sql = "SELECT * FROM transactions WHERE user_id = ? ORDER BY date DESC";
         try (Connection conn = dbManager.getConnection();
@@ -60,6 +66,22 @@ public class TransactionDAO {
             System.err.println("Error fetching transactions: " + e.getMessage());
         }
         return transactions;
+    }
+
+    /** Find a transaction by id. */
+    public Transaction findById(int transactionId) {
+        String sql = "SELECT * FROM transactions WHERE transaction_id = ?";
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, transactionId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return mapRow(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching transaction by id: " + e.getMessage());
+        }
+        return null;
     }
 
     /** Get ALL transactions across all users (for admin). */
@@ -99,6 +121,17 @@ public class TransactionDAO {
 
     /** Get category-wise totals using HashMap. */
     public HashMap<String, Double> getCategoryTotals(int userId, String type) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            HashMap<String, Double> categoryMap = new HashMap<>();
+            for (Transaction t : findByUserId(userId)) {
+                if (t != null && (type == null || type.equalsIgnoreCase(t.getType()))) {
+                    if (t.getCategory() != null) {
+                        categoryMap.merge(t.getCategory(), t.getAmount(), (a, b) -> (a != null ? a : 0.0) + (b != null ? b : 0.0));
+                    }
+                }
+            }
+            return categoryMap;
+        }
         HashMap<String, Double> categoryMap = new HashMap<>();
         String sql = "SELECT category, SUM(amount) as total FROM transactions WHERE user_id = ? AND type = ? GROUP BY category";
         try (Connection conn = dbManager.getConnection();
@@ -117,6 +150,18 @@ public class TransactionDAO {
 
     /** Get monthly totals (HashMap: "YYYY-MM" -> total). */
     public HashMap<String, Double> getMonthlyTotals(int userId, String type) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            HashMap<String, Double> monthlyMap = new HashMap<>();
+            for (Transaction t : findByUserId(userId)) {
+                if (t != null && (type == null || type.equalsIgnoreCase(t.getType()))) {
+                    if (t.getDate() != null) {
+                        String monthKey = String.format("%d-%02d", t.getDate().getYear(), t.getDate().getMonthValue());
+                        monthlyMap.merge(monthKey, t.getAmount(), (a, b) -> (a != null ? a : 0.0) + (b != null ? b : 0.0));
+                    }
+                }
+            }
+            return monthlyMap;
+        }
         HashMap<String, Double> monthlyMap = new HashMap<>();
         String sql = "SELECT SUBSTR(date, 1, 7) as month, SUM(amount) as total FROM transactions WHERE user_id = ? AND type = ? GROUP BY month ORDER BY month";
         try (Connection conn = dbManager.getConnection();
@@ -135,11 +180,23 @@ public class TransactionDAO {
 
     /** Get total income for a user. */
     public double getTotalIncome(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return findByUserId(userId).stream()
+                    .filter(t -> t != null && "INCOME".equalsIgnoreCase(t.getType()))
+                    .mapToDouble(t -> t.getAmount())
+                    .sum();
+        }
         return getTotal(userId, "INCOME");
     }
 
     /** Get total expenses for a user. */
     public double getTotalExpenses(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return findByUserId(userId).stream()
+                    .filter(t -> t != null && "EXPENSE".equalsIgnoreCase(t.getType()))
+                    .mapToDouble(t -> t.getAmount())
+                    .sum();
+        }
         return getTotal(userId, "EXPENSE");
     }
 
@@ -159,6 +216,9 @@ public class TransactionDAO {
 
     /** Delete a transaction. */
     public boolean delete(int transactionId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().deleteTransaction(transactionId);
+        }
         String sql = "DELETE FROM transactions WHERE transaction_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

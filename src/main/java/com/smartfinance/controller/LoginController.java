@@ -231,6 +231,10 @@ public class LoginController {
         }
     }
 
+    public boolean isShowingLogin() {
+        return showingLogin;
+    }
+
     private VBox createLoginForm() {
         VBox form = new VBox(16);
         form.setAlignment(Pos.CENTER);

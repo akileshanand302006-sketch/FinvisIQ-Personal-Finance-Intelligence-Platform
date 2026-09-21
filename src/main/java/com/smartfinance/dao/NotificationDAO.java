@@ -38,6 +38,9 @@ public class NotificationDAO {
     }
 
     public ArrayList<Notification> findByUserId(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().getNotifications(userId);
+        }
         ArrayList<Notification> notifications = new ArrayList<>();
         String sql = "SELECT * FROM notifications WHERE user_id = ? ORDER BY date DESC, notification_id DESC";
         try (Connection conn = dbManager.getConnection();

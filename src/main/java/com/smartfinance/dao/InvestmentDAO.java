@@ -18,6 +18,9 @@ public class InvestmentDAO {
     }
 
     public int insert(Investment inv) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().createInvestment(inv);
+        }
         String sql = "INSERT INTO investments (user_id, type, amount, return_rate, start_date) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -40,6 +43,9 @@ public class InvestmentDAO {
     }
 
     public ArrayList<Investment> findByUserId(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().getInvestments(userId);
+        }
         ArrayList<Investment> investments = new ArrayList<>();
         String sql = "SELECT * FROM investments WHERE user_id = ? ORDER BY start_date DESC";
         try (Connection conn = dbManager.getConnection();
@@ -55,8 +61,32 @@ public class InvestmentDAO {
         return investments;
     }
 
+    public Investment findById(int investmentId) {
+        String sql = "SELECT * FROM investments WHERE investment_id = ?";
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, investmentId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return mapRow(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching investment by id: " + e.getMessage());
+        }
+        return null;
+    }
+
     /** Get investment type distribution using HashMap. */
     public HashMap<String, Double> getTypeDistribution(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            HashMap<String, Double> distribution = new HashMap<>();
+            for (Investment inv : findByUserId(userId)) {
+                if (inv != null && inv.getType() != null) {
+                    distribution.merge(inv.getType(), inv.getAmount(), (a, b) -> (a != null ? a : 0.0) + (b != null ? b : 0.0));
+                }
+            }
+            return distribution;
+        }
         HashMap<String, Double> distribution = new HashMap<>();
         String sql = "SELECT type, SUM(amount) as total FROM investments WHERE user_id = ? GROUP BY type";
         try (Connection conn = dbManager.getConnection();
@@ -74,6 +104,9 @@ public class InvestmentDAO {
 
     /** Get total investment amount. */
     public double getTotalInvestment(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return findByUserId(userId).stream().filter(inv -> inv != null).mapToDouble(inv -> inv.getAmount()).sum();
+        }
         String sql = "SELECT COALESCE(SUM(amount), 0) FROM investments WHERE user_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -87,6 +120,9 @@ public class InvestmentDAO {
     }
 
     public boolean delete(int investmentId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().deleteInvestment(investmentId);
+        }
         String sql = "DELETE FROM investments WHERE investment_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

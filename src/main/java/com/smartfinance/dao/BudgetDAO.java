@@ -16,6 +16,9 @@ public class BudgetDAO {
     }
 
     public int insert(Budget budget) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().createBudget(budget);
+        }
         String sql = "INSERT INTO budgets (user_id, category, budget_amount, period, warning_threshold, created_at) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -40,6 +43,9 @@ public class BudgetDAO {
     }
 
     public ArrayList<Budget> findByUserId(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().getBudgets(userId);
+        }
         ArrayList<Budget> list = new ArrayList<>();
         String sql = "SELECT * FROM budgets WHERE user_id = ?";
         try (Connection conn = dbManager.getConnection();
@@ -53,6 +59,21 @@ public class BudgetDAO {
             System.err.println("Error fetching budgets: " + e.getMessage());
         }
         return list;
+    }
+
+    public Budget findById(int budgetId) {
+        String sql = "SELECT * FROM budgets WHERE budget_id = ?";
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, budgetId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return mapRow(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching budget by id: " + e.getMessage());
+        }
+        return null;
     }
 
     public boolean update(Budget budget) {
@@ -71,6 +92,9 @@ public class BudgetDAO {
     }
 
     public boolean delete(int budgetId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().deleteBudget(budgetId);
+        }
         String sql = "DELETE FROM budgets WHERE budget_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

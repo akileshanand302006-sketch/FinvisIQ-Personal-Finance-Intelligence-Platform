@@ -58,6 +58,20 @@ public class Goal {
         this.expectedReturn = expectedReturn;
     }
 
+    public Goal(int userId, String goalName, double targetAmount, double savedAmount,
+                LocalDate deadline, String status, String priority, String category, double monthlyContribution, double expectedReturn) {
+        this.userId = userId;
+        this.goalName = goalName;
+        this.targetAmount = targetAmount;
+        this.savedAmount = savedAmount;
+        this.deadline = deadline;
+        this.status = status;
+        this.priority = priority != null ? priority : "MEDIUM";
+        this.category = category != null ? category : "General";
+        this.monthlyContribution = monthlyContribution;
+        this.expectedReturn = expectedReturn;
+    }
+
     // Getters and Setters
     public int getGoalId() { return goalId; }
     public void setGoalId(int goalId) { this.goalId = goalId; }

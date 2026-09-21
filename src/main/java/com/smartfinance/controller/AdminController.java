@@ -63,7 +63,7 @@ public class AdminController {
     private HBox createAdminStats() {
         int userCount = userDAO.getUserCount();
         ArrayList<Transaction> allTxns = transactionDAO.findAll();
-        double totalVolume = allTxns.stream().mapToDouble(Transaction::getAmount).sum();
+        double totalVolume = allTxns.stream().filter(t -> t != null).mapToDouble(t -> t.getAmount()).sum();
 
         VBox usersCard = makeStatCard("Total Registered Users", String.valueOf(userCount), "#7C3AED");
         VBox txnCard = makeStatCard("System Transactions", String.valueOf(allTxns.size()), "#10B981");

@@ -18,6 +18,9 @@ public class GoalDAO {
     }
 
     public int insert(Goal goal) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().createGoal(goal);
+        }
         String sql = "INSERT INTO goals (user_id, goal_name, target_amount, saved_amount, deadline, status, priority, category, monthly_contribution, expected_return) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -45,6 +48,9 @@ public class GoalDAO {
     }
 
     public ArrayList<Goal> findByUserId(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().getGoals(userId);
+        }
         ArrayList<Goal> goals = new ArrayList<>();
         String sql = "SELECT * FROM goals WHERE user_id = ? ORDER BY deadline";
         try (Connection conn = dbManager.getConnection();
@@ -58,6 +64,21 @@ public class GoalDAO {
             System.err.println("Error fetching goals: " + e.getMessage());
         }
         return goals;
+    }
+
+    public Goal findById(int goalId) {
+        String sql = "SELECT * FROM goals WHERE goal_id = ?";
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, goalId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return mapRow(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching goal by id: " + e.getMessage());
+        }
+        return null;
     }
 
     public boolean update(Goal goal) {
@@ -82,6 +103,9 @@ public class GoalDAO {
     }
 
     public boolean updateSavedAmount(int goalId, double savedAmount) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().contributeGoal(goalId, savedAmount);
+        }
         String sql = "UPDATE goals SET saved_amount = ? WHERE goal_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -95,6 +119,9 @@ public class GoalDAO {
     }
 
     public boolean delete(int goalId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().deleteGoal(goalId);
+        }
         String sql = "DELETE FROM goals WHERE goal_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

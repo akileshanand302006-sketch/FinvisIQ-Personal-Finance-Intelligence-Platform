@@ -2,7 +2,6 @@ package com.smartfinance;
 
 import com.smartfinance.controller.LoginController;
 import com.smartfinance.controller.MainController;
-import com.smartfinance.dao.DatabaseManager;
 import com.smartfinance.model.User;
 import com.smartfinance.util.ThemeManager;
 
@@ -33,10 +32,9 @@ public class App extends Application {
         stage.setHeight(800);
         stage.centerOnScreen();
 
-        // Initialize database in background
-        new Thread(() -> {
-            DatabaseManager.getInstance();
-        }).start();
+        // Initialize desktop in secure REST API client mode (No direct JDBC or DB passwords needed)
+        com.smartfinance.api.ApiConfig.setClientMode(true);
+        com.smartfinance.api.ApiClient.getInstance().init();
 
         // Show login screen directly
         showLoginScreen();

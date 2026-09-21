@@ -16,6 +16,9 @@ public class SubscriptionDAO {
     }
 
     public int insert(Subscription sub) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().createSubscription(sub);
+        }
         String sql = "INSERT INTO subscriptions (user_id, service_name, amount, billing_cycle, next_billing_date, category, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -41,6 +44,9 @@ public class SubscriptionDAO {
     }
 
     public ArrayList<Subscription> findByUserId(int userId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().getSubscriptions(userId);
+        }
         ArrayList<Subscription> list = new ArrayList<>();
         String sql = "SELECT * FROM subscriptions WHERE user_id = ?";
         try (Connection conn = dbManager.getConnection();
@@ -56,6 +62,21 @@ public class SubscriptionDAO {
         return list;
     }
 
+    public Subscription findById(int subscriptionId) {
+        String sql = "SELECT * FROM subscriptions WHERE subscription_id = ?";
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, subscriptionId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return mapRow(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching subscription by id: " + e.getMessage());
+        }
+        return null;
+    }
+
     public boolean update(Subscription sub) {
         String sql = "UPDATE subscriptions SET service_name=?, amount=?, billing_cycle=?, next_billing_date=?, category=?, status=? WHERE subscription_id=?";
         try (Connection conn = dbManager.getConnection();
@@ -63,7 +84,7 @@ public class SubscriptionDAO {
             pstmt.setString(1, sub.getServiceName());
             pstmt.setDouble(2, sub.getAmount());
             pstmt.setString(3, sub.getBillingCycle());
-            pstmt.setString(4, sub.getNextBillingDate().toString());
+            pstmt.setString(4, sub.getNextBillingDate() != null ? sub.getNextBillingDate().toString() : LocalDate.now().toString());
             pstmt.setString(5, sub.getCategory());
             pstmt.setString(6, sub.getStatus());
             pstmt.setInt(7, sub.getSubscriptionId());
@@ -75,6 +96,9 @@ public class SubscriptionDAO {
     }
 
     public boolean delete(int subscriptionId) {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            return com.smartfinance.api.ApiClient.getInstance().deleteSubscription(subscriptionId);
+        }
         String sql = "DELETE FROM subscriptions WHERE subscription_id = ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

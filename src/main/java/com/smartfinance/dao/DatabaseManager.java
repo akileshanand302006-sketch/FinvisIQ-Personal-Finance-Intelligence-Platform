@@ -91,6 +91,10 @@ public class DatabaseManager {
     }
 
     private DatabaseManager() {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            // In desktop client mode, direct JDBC is disabled and routed through Railway REST API
+            return;
+        }
         try {
             Class.forName(dbDriver);
         } catch (ClassNotFoundException e) {
@@ -197,6 +201,9 @@ public class DatabaseManager {
     }
 
     public Connection getConnection() throws SQLException {
+        if (com.smartfinance.api.ApiConfig.isClientMode()) {
+            throw new SQLException("FinvisIQ Desktop is configured in secure REST API client mode. Direct JDBC connection is disabled.");
+        }
         if (dbPassword == null || dbPassword.isBlank()) {
             System.err.println("WARNING: DB_PASSWORD environment variable is not set. Please set DB_PASSWORD to connect to the FinvisIQ database.");
         }
