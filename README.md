@@ -21,10 +21,7 @@ A cloud-enabled personal finance intelligence platform for tracking, analyzing, 
 </p>
 
 <p align="center">
-
-## 🌐 Live Web Application
-<p align="center">
- <a href="https://finvis.netlify.app">
+  <a href="https://finvis.netlify.app">
     <img src="https://img.shields.io/badge/%F0%9F%9A%80%20LIVE%20DEMO-FinvisIQ-6C5CE7?style=for-the-badge&logo=netlify&logoColor=white" alt="Launch FinvisIQ Live Demo">
   </a>
 </p>
@@ -33,6 +30,7 @@ A cloud-enabled personal finance intelligence platform for tracking, analyzing, 
   <b>🌐 Live Application:</b>
   <a href="https://finvis.netlify.app">finvis.netlify.app</a>
 </p>
+
 ---
 
 ## 📌 Overview
@@ -41,14 +39,15 @@ A cloud-enabled personal finance intelligence platform for tracking, analyzing, 
 
 The platform combines a modern web application, a native JavaFX desktop client, a Spring Boot REST API, and a cloud-hosted MySQL database.
 
-### 🌐 Production Application
+### 🌐 Live Application
 
-**Live Website:**  
-https://finvis.netlify.app
+<p align="center">
+  <a href="https://finvis.netlify.app">
+    <img src="https://img.shields.io/badge/%F0%9F%9A%80%20OPEN%20FINVISIQ-Live%20Web%20Application-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Open FinvisIQ">
+  </a>
+</p>
 
-**Frontend:** Netlify  
-**Backend:** Railway  
-**Database:** Aiven Cloud MySQL
+**Live Website:** https://finvis.netlify.app
 
 ### Core Architecture
 
@@ -318,6 +317,7 @@ FinvisIQ/
         ├── java/
         │   └── com/
         │       └── smartfinance/
+        │           │
         │           ├── App.java
         │           ├── Launcher.java
         │           │
@@ -482,11 +482,13 @@ Start the development server:
 
 npm run dev
 
-The production web application is available at:
+🚀 Production Web Application
 
-https://finvis.netlify.app
-
-The production frontend communicates with the deployed Railway backend through HTTPS.
+<p align="center">
+  <a href="https://finvis.netlify.app">
+    <img src="https://img.shields.io/badge/%F0%9F%92%8E%20OPEN%20FINVISIQ-Live%20Web%20App-6C5CE7?style=for-the-badge&logo=netlify&logoColor=white" alt="Open FinvisIQ Live Web Application">
+  </a>
+</p>Live Website: https://finvis.netlify.app
 
 
 ---
@@ -550,7 +552,11 @@ server.address=0.0.0.0
 
 🌐 Netlify Frontend
 
-The production web frontend is deployed at:
+The web frontend is deployed on Netlify.
+
+🚀 Open the Live Application
+
+Production URL:
 
 https://finvis.netlify.app
 
