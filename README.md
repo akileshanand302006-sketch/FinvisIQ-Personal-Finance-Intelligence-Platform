@@ -1,4 +1,4 @@
-
+ 
 # 💎 FinvisIQ — Personal Finance Intelligence Platform
 
 <p align="center">
@@ -20,6 +20,14 @@ A cloud-enabled personal finance intelligence platform for tracking, analyzing, 
 
 </p>
 
+<p align="center">
+
+## 🌐 Live Web Application
+
+### [🚀 Launch FinvisIQ — finvis.netlify.app](https://finvis.netlify.app)
+
+</p>
+
 ---
 
 ## 📌 Overview
@@ -27,6 +35,15 @@ A cloud-enabled personal finance intelligence platform for tracking, analyzing, 
 **FinvisIQ** is a full-stack Personal Finance Intelligence Platform designed to help users manage their income, expenses, budgets, savings, investments, financial goals, and overall financial health from a unified system.
 
 The platform combines a modern web application, a native JavaFX desktop client, a Spring Boot REST API, and a cloud-hosted MySQL database.
+
+### 🌐 Production Application
+
+**Live Website:**  
+https://finvis.netlify.app
+
+**Frontend:** Netlify  
+**Backend:** Railway  
+**Database:** Aiven Cloud MySQL
 
 ### Core Architecture
 
@@ -53,128 +70,183 @@ The platform combines a modern web application, a native JavaFX desktop client, 
                        │                             │
               ┌────────▼────────┐          ┌────────▼────────┐
               │ Netlify Web App │          │ JavaFX Desktop  │
-              │                │          │     Client       │
-              │ HTML/CSS/JS    │          │ Java 21 + JavaFX│
-              └────────────────┘          └─────────────────┘
-````
+              │                 │          │     Client      │
+              │ HTML/CSS/JS     │          │ Java 21 + JavaFX│
+              └─────────────────┘          └─────────────────┘
 
-Both the web application and desktop application communicate with the **same Spring Boot backend**.
+Both the web application and desktop application communicate with the same Spring Boot backend.
 
 The client applications never connect directly to the production database.
 
----
-
-# ✨ Key Features
-
-## 🎨 Modern Financial Dashboard
-
-* Premium Liquid Glass inspired interface
-* Responsive web interface
-* Light and dark themes
-* Smooth transitions and micro-interactions
-* Financial overview dashboard
-* Income and expense summaries
-* Net savings calculation
-* Financial health indicators
 
 ---
 
-## 💰 Income & Expense Management
+✨ Key Features
 
-* Record income transactions
-* Record expense transactions
-* Categorize transactions
-* View transaction history
-* Track spending patterns
-* Calculate income versus expenses
-* Monitor monthly financial activity
+🎨 Modern Financial Dashboard
+
+Premium Liquid Glass inspired interface
+
+Responsive web interface
+
+Light and dark themes
+
+Smooth transitions and micro-interactions
+
+Financial overview dashboard
+
+Income and expense summaries
+
+Net savings calculation
+
+Financial health indicators
+
+
 
 ---
 
-## 📊 Financial Analytics
+💰 Income & Expense Management
 
-* Income versus expense analysis
-* Expense category distribution
-* Savings analysis
-* Spending pattern visualization
-* Financial health metrics
-* Dashboard-level financial summaries
+Record income transactions
+
+Record expense transactions
+
+Categorize transactions
+
+View transaction history
+
+Track spending patterns
+
+Calculate income versus expenses
+
+Monitor monthly financial activity
+
+
 
 ---
 
-## 🤖 Financial Intelligence
+📊 Financial Analytics
+
+Income versus expense analysis
+
+Expense category distribution
+
+Savings analysis
+
+Spending pattern visualization
+
+Financial health metrics
+
+Dashboard-level financial summaries
+
+
+
+---
+
+🤖 Financial Intelligence
 
 FinvisIQ provides automated financial insights based on user data.
 
 Features include:
 
-* Unusual expense detection
-* Spending alerts
-* Budget warnings
-* Emergency fund readiness analysis
-* Automated financial recommendations
-* Financial health calculations
+Unusual expense detection
+
+Spending alerts
+
+Budget warnings
+
+Emergency fund readiness analysis
+
+Automated financial recommendations
+
+Financial health calculations
+
+
 
 ---
 
-## 📈 SIP & Wealth Planner
+📈 SIP & Wealth Planner
 
 The wealth planning module provides tools for estimating long-term investment growth.
 
 Features include:
 
-* SIP calculation
-* Investment amount estimation
-* Expected return calculation
-* Compound interest projection
-* Wealth goal planning
-* Investment timeline visualization
+SIP calculation
+
+Investment amount estimation
+
+Expected return calculation
+
+Compound interest projection
+
+Wealth goal planning
+
+Investment timeline visualization
+
+
 
 ---
 
-## 📑 Financial Reports
+📑 Financial Reports
 
 FinvisIQ supports financial report generation.
 
-### PDF Reports
+PDF Reports
 
 The application can generate financial reports containing:
 
-* Financial summaries
-* Transaction information
-* Metrics
-* Tables
-* Charts
-* Financial analysis
+Financial summaries
 
-### Word Reports
+Transaction information
 
-The application also supports generation of genuine `.docx` documents compatible with:
+Metrics
 
-* Microsoft Word
-* LibreOffice
-* Google Docs
+Tables
+
+Charts
+
+Financial analysis
+
+
+Word Reports
+
+The application also supports generation of genuine .docx documents compatible with:
+
+Microsoft Word
+
+LibreOffice
+
+Google Docs
+
+
 
 ---
 
-## 🔐 Authentication & Security
+🔐 Authentication & Security
 
 FinvisIQ uses a centralized backend security architecture.
 
 Security features include:
 
-* User authentication
-* Password hashing
-* JWT-based API authentication
-* Role-based authorization
-* Admin and common-user roles
-* Session/token management
-* Backend-side validation
-* Protected REST endpoints
+User authentication
 
-### Security Architecture
+Password hashing
 
-```text
+JWT-based API authentication
+
+Role-based authorization
+
+Admin and common-user roles
+
+Session/token management
+
+Backend-side validation
+
+Protected REST endpoints
+
+
+Security Architecture
+
 Web Client ────────┐
                    │
 Desktop Client ────┤
@@ -185,38 +257,39 @@ Desktop Client ────┤
                    │ JDBC + TLS
                    ▼
             Aiven MySQL
-```
 
 Database credentials are stored only on the backend server.
 
-They are **never distributed to users through the desktop application or frontend application**.
+They are never distributed to users through the desktop application or frontend application.
+
 
 ---
 
-# 🏗️ Technology Stack
+🏗️ Technology Stack
 
-| Layer                | Technology                | Purpose                          |
-| -------------------- | ------------------------- | -------------------------------- |
-| Backend              | Spring Boot 3.2.5         | REST API and business logic      |
-| Programming Language | Java 21                   | Application development          |
-| Web Frontend         | HTML5 / CSS3 / JavaScript | Browser-based application        |
-| Desktop UI           | JavaFX 21.0.2             | Native desktop client            |
-| API Client           | Java `HttpClient`         | Desktop-to-backend communication |
-| Database             | MySQL 8.x                 | Relational data storage          |
-| Cloud Database       | Aiven Cloud MySQL         | Production database hosting      |
-| Database Driver      | MySQL Connector/J         | Java database connectivity       |
-| Authentication       | JWT                       | Stateless API authentication     |
-| Connection Pool      | HikariCP                  | Database connection management   |
-| Build System         | Apache Maven              | Build and dependency management  |
-| Backend Hosting      | Railway                   | Spring Boot deployment           |
-| Frontend Hosting     | Netlify                   | Web application deployment       |
+Layer	Technology	Purpose
+
+Backend	Spring Boot 3.2.5	REST API and business logic
+Programming Language	Java 21	Application development
+Web Frontend	HTML5 / CSS3 / JavaScript	Browser-based application
+Desktop UI	JavaFX 21.0.2	Native desktop client
+API Client	Java HttpClient	Desktop-to-backend communication
+Database	MySQL 8.x	Relational data storage
+Cloud Database	Aiven Cloud MySQL	Production database hosting
+Database Driver	MySQL Connector/J	Java database connectivity
+Authentication	JWT	Stateless API authentication
+Connection Pool	HikariCP	Database connection management
+Build System	Apache Maven	Build and dependency management
+Backend Hosting	Railway	Spring Boot deployment
+Frontend Hosting	Netlify	Web application deployment
+
+
 
 ---
 
-# 📁 Project Structure
+📁 Project Structure
 
-```text
-Finora-Personal-Finance-Intelligence-Platform/
+FinvisIQ/
 │
 ├── pom.xml
 ├── README.md
@@ -226,6 +299,8 @@ Finora-Personal-Finance-Intelligence-Platform/
 ├── .gitignore
 ├── run.bat
 ├── run-local.bat
+├── SETUP_WINDOWS.bat
+├── FINVISIQ_LOCAL_REQUIREMENTS.txt
 │
 ├── frontend/
 │   ├── index.html
@@ -238,7 +313,6 @@ Finora-Personal-Finance-Intelligence-Platform/
         ├── java/
         │   └── com/
         │       └── smartfinance/
-        │           │
         │           ├── App.java
         │           ├── Launcher.java
         │           │
@@ -281,47 +355,55 @@ Finora-Personal-Finance-Intelligence-Platform/
             ├── images/
             ├── application.properties
             └── ...
-```
 
 > The exact package/file structure may evolve as the application is developed.
 
+
+
+
 ---
 
-# 🚀 Getting Started
+🚀 Getting Started
 
-## 1. Requirements
+1. Requirements
 
-### For the desktop application
+For the desktop application
 
 You need:
 
-* Java JDK 21+
-* Maven 3.9+ (optional if using the provided launcher)
-* Windows for `run.bat`
+Java JDK 21+
 
-The desktop application does **not** require:
+Maven 3.9+ (optional if using the provided launcher)
 
-* MySQL Server
-* XAMPP
-* phpMyAdmin
-* Aiven credentials
-* Local database configuration
+Windows for run.bat
+
+
+The desktop application does not require:
+
+MySQL Server
+
+XAMPP
+
+phpMyAdmin
+
+Aiven credentials
+
+Local database configuration
+
 
 The desktop client communicates with the deployed backend through HTTPS.
 
+
 ---
 
-# 🖥️ Running the Desktop Application
+🖥️ Running the Desktop Application
 
 The easiest method is:
 
-```cmd
 run.bat
-```
 
 The desktop application uses the configured backend API endpoint.
 
-```text
 JavaFX Desktop
       │
       │ HTTPS REST API
@@ -331,19 +413,18 @@ Railway Spring Boot Backend
       │ JDBC + TLS
       ▼
 Aiven MySQL
-```
 
 No database password should be required on the user's computer.
 
+
 ---
 
-# 💻 Local Development
+💻 Local Development
 
 For backend development, configure the required environment variables.
 
 Example:
 
-```text
 DB_URL=jdbc:mysql://<AIVEN_HOST>:<PORT>/smart_finance_db?sslMode=REQUIRED
 DB_USERNAME=avnadmin
 DB_PASSWORD=<YOUR_DATABASE_PASSWORD>
@@ -351,84 +432,69 @@ DB_PASSWORD=<YOUR_DATABASE_PASSWORD>
 FRONTEND_URL=http://localhost:3000
 
 JWT_SECRET=<YOUR_SECRET>
-```
 
 Do not commit actual credentials to GitHub.
 
+
 ---
 
-## Start the Backend
+Start the Backend
 
 Using Maven:
 
-```cmd
 mvnw.cmd spring-boot:run
-```
 
 Or package the application:
 
-```cmd
 mvnw.cmd clean package
-```
 
 Then run the generated Spring Boot application.
 
 Example:
 
-```cmd
 java -jar target\smart-finance-1.0.0.jar
-```
 
 The backend uses:
 
-```text
 PORT=8080
-```
 
 by default when running locally.
 
+
 ---
 
-# 🌐 Running the Web Frontend
+🌐 Running the Web Frontend
 
 Navigate to the frontend directory:
 
-```cmd
 cd frontend
-```
 
 Install dependencies if required:
 
-```cmd
 npm install
-```
 
 Start the development server:
 
-```cmd
 npm run dev
-```
 
-The exact development URL depends on the frontend configuration.
+The production web application is available at:
 
-The frontend should communicate with the backend through an API URL such as:
+https://finvis.netlify.app
 
-```text
-VITE_API_URL=http://localhost:8080
-```
+The production frontend communicates with the deployed Railway backend through HTTPS.
 
-For production, the API URL must point to the deployed Railway backend.
 
 ---
 
-# ☁️ Production Deployment
+☁️ Production Deployment
 
 FinvisIQ uses the following deployment architecture:
 
-```text
 ┌───────────────────────┐
 │       Netlify         │
 │   Web Frontend        │
+│                       │
+│ finvis.netlify.app    │
 └───────────┬───────────┘
             │
             │ HTTPS
@@ -444,91 +510,92 @@ FinvisIQ uses the following deployment architecture:
 │   Aiven Cloud MySQL   │
 │    Production DB      │
 └───────────────────────┘
-```
+
 
 ---
 
-## 🚄 Railway Backend
+🚄 Railway Backend
 
 The Spring Boot backend is deployed on Railway.
 
 Railway provides:
 
-* Backend hosting
-* HTTPS endpoint
-* Environment variables
-* Automatic deployments from GitHub
-* Runtime configuration
-* Application logs
+Backend hosting
 
-The backend should listen on the Railway-provided `PORT`.
+HTTPS endpoint
+
+Environment variables
+
+Automatic deployments from GitHub
+
+Runtime configuration
+
+Application logs
+
+
+The backend should listen on the Railway-provided PORT.
 
 Example:
 
-```properties
 server.port=${PORT:8080}
 server.address=0.0.0.0
-```
+
 
 ---
 
-## 🌐 Netlify Frontend
+🌐 Netlify Frontend
 
-The web frontend is deployed on Netlify.
+The production web frontend is deployed at:
+
+https://finvis.netlify.app
 
 The frontend uses an environment variable to determine the backend API URL.
 
 Example:
 
-```text
 VITE_API_URL=https://<your-railway-domain>
-```
 
 The actual production value must point to the deployed Railway backend.
 
+
 ---
 
-## ☁️ Aiven MySQL
+☁️ Aiven MySQL
 
 The production database is hosted on Aiven Cloud.
 
 The backend connects using JDBC with TLS:
 
-```text
 jdbc:mysql://<AIVEN_HOST>:<PORT>/smart_finance_db?sslMode=REQUIRED
-```
 
 Database credentials must remain inside the Railway environment.
 
+
 ---
 
-# 🔑 Environment Variables
+🔑 Environment Variables
 
 Example configuration:
 
-```text
 DB_URL=jdbc:mysql://<AIVEN_HOST>:<PORT>/smart_finance_db?sslMode=REQUIRED
 DB_USERNAME=avnadmin
 DB_PASSWORD=<SECRET>
 
-FRONTEND_URL=https://<your-netlify-domain>
+FRONTEND_URL=https://finvis.netlify.app
 
 JWT_SECRET=<SECRET>
 
 PORT=8080
-```
 
-### Important
+Important
 
 Never commit:
 
-```text
 DB_PASSWORD
 JWT_SECRET
 Aiven credentials
 Production API secrets
 Private keys
-```
 
 to GitHub.
 
@@ -536,42 +603,39 @@ Use Railway environment variables for backend secrets.
 
 Use Netlify environment variables for frontend configuration.
 
+
 ---
 
-# 🔒 Production Security Model
+🔒 Production Security Model
 
 FinvisIQ follows a client-server security model.
 
-### ❌ Incorrect architecture
+❌ Incorrect architecture
 
-```text
 Desktop ───────────────► Aiven MySQL
                          ▲
                          │
                     DB Password
-```
 
 This would expose production database credentials to end users.
 
-### ✅ FinvisIQ architecture
+✅ FinvisIQ architecture
 
-```text
 Desktop ──HTTPS──► Railway API ──JDBC/TLS──► Aiven MySQL
 
 Web ──────HTTPS──► Railway API ──JDBC/TLS──► Aiven MySQL
-```
 
 Only the Railway backend has access to the production database credentials.
 
+
 ---
 
-# 🔄 Unified Data Architecture
+🔄 Unified Data Architecture
 
 The web and desktop applications use the same backend and database.
 
 For example:
 
-```text
 Desktop Client
       │
       │ Create Transaction
@@ -585,125 +649,172 @@ Aiven MySQL
       │ Retrieve Transaction
       │
 Web Application
-```
 
 Therefore, data created through one client can be retrieved by another client through the centralized backend.
 
+
 ---
 
-# ❤️ Financial Health
+❤️ Financial Health
 
 FinvisIQ provides a financial health evaluation based on available financial information.
 
 The dashboard can incorporate factors such as:
 
-* Income
-* Expenses
-* Savings
-* Budget adherence
-* Emergency fund readiness
-* Investment planning
-* Spending patterns
+Income
+
+Expenses
+
+Savings
+
+Budget adherence
+
+Emergency fund readiness
+
+Investment planning
+
+Spending patterns
+
 
 The health score is presented as an application-generated financial metric.
 
+
 ---
 
-# 🛡️ API Health Check
+🛡️ API Health Check
 
 The backend provides a health endpoint for deployment verification.
 
 Example:
 
-```text
 GET /api/health
-```
 
 Expected response:
 
-```json
 {
   "status": "UP"
 }
-```
 
 A database health endpoint may also be provided:
 
-```text
 GET /api/health/db
-```
 
 depending on the backend implementation.
 
+
 ---
 
-# 🧪 Testing Checklist
+🧪 Testing Checklist
 
 Before production deployment, verify:
 
-### Backend
+Backend
 
-* [ ] Spring Boot starts successfully
-* [ ] Railway deployment succeeds
-* [ ] `/api/health` responds successfully
-* [ ] Database connection succeeds
-* [ ] Aiven MySQL is reachable
-* [ ] Authentication works
-* [ ] JWT authentication works
-* [ ] CRUD operations work
-* [ ] CORS is configured correctly
+[ ] Spring Boot starts successfully
 
-### Web Application
+[ ] Railway deployment succeeds
 
-* [ ] Netlify deployment succeeds
-* [ ] Login works
-* [ ] Dashboard loads
-* [ ] Transactions work
-* [ ] Budgets work
-* [ ] Goals work
-* [ ] Analytics load
-* [ ] SIP calculator works
-* [ ] Reports work
-* [ ] Light theme works
-* [ ] Dark theme works
-* [ ] Responsive layout works
+[ ] /api/health responds successfully
 
-### Desktop Application
+[ ] Database connection succeeds
 
-* [ ] `run.bat` starts successfully
-* [ ] No local MySQL installation is required
-* [ ] No database password is required
-* [ ] Desktop connects to Railway
-* [ ] Login works
-* [ ] Financial data loads
-* [ ] CRUD operations work
-* [ ] Reports work
+[ ] Aiven MySQL is reachable
 
-### Cross-Client Verification
+[ ] Authentication works
 
-* [ ] Create data from desktop
-* [ ] Verify it appears on web
-* [ ] Create data from web
-* [ ] Verify it appears on desktop
-* [ ] Confirm both clients use the same production data
+[ ] JWT authentication works
+
+[ ] CRUD operations work
+
+[ ] CORS is configured correctly
+
+
+Web Application
+
+[ ] Netlify deployment succeeds
+
+[ ] Live website opens at https://finvis.netlify.app
+
+[ ] Login works
+
+[ ] Dashboard loads
+
+[ ] Transactions work
+
+[ ] Budgets work
+
+[ ] Goals work
+
+[ ] Analytics load
+
+[ ] SIP calculator works
+
+[ ] Reports work
+
+[ ] Light theme works
+
+[ ] Dark theme works
+
+[ ] Responsive layout works
+
+
+Desktop Application
+
+[ ] run.bat starts successfully
+
+[ ] No local MySQL installation is required
+
+[ ] No database password is required
+
+[ ] Desktop connects to Railway
+
+[ ] Login works
+
+[ ] Financial data loads
+
+[ ] CRUD operations work
+
+[ ] Reports work
+
+
+Cross-Client Verification
+
+[ ] Create data from desktop
+
+[ ] Verify it appears on web
+
+[ ] Create data from web
+
+[ ] Verify it appears on desktop
+
+[ ] Confirm both clients use the same production data
+
+
 
 ---
 
-# 📚 Documentation
+📚 Documentation
 
 Additional documentation:
 
-* [Deployment Guide](DEPLOYMENT.md)
-* [REST API Documentation](API.md)
-* [Environment Configuration](.env.example)
+Deployment Guide
+
+REST API Documentation
+
+Environment Configuration
+
+Local Development Requirements
+
+Windows Automatic Setup
+
+
 
 ---
 
-# 🔧 Development Workflow
+🔧 Development Workflow
 
 Recommended development workflow:
 
-```text
 1. Develop locally
        ↓
 2. Test Spring Boot backend
@@ -723,61 +834,73 @@ Recommended development workflow:
 9. Netlify deploys frontend
        ↓
 10. Test production system
-```
+
 
 ---
 
-# 🌟 Project Goals
+🌟 Project Goals
 
 FinvisIQ aims to provide a unified platform for:
 
-* Personal financial management
-* Expense tracking
-* Budget planning
-* Savings analysis
-* Investment planning
-* Financial intelligence
-* Automated financial insights
-* Financial reporting
-* Cross-platform access
+Personal financial management
+
+Expense tracking
+
+Budget planning
+
+Savings analysis
+
+Investment planning
+
+Financial intelligence
+
+Automated financial insights
+
+Financial reporting
+
+Cross-platform access
+
+
 
 ---
 
-# 📌 Project Status
+📌 Project Status
 
-**Project:** FinvisIQ — Personal Finance Intelligence Platform
+Project: FinvisIQ — Personal Finance Intelligence Platform
 
-**Architecture:** Full-Stack Cloud Application
+Architecture: Full-Stack Cloud Application
 
-**Backend:** Spring Boot REST API
+Backend: Spring Boot REST API
 
-**Web Client:** HTML / CSS / JavaScript
+Web Client: HTML / CSS / JavaScript
 
-**Desktop Client:** JavaFX
+Desktop Client: JavaFX
 
-**Database:** Aiven Cloud MySQL
+Database: Aiven Cloud MySQL
 
-**Backend Hosting:** Railway
+Backend Hosting: Railway
 
-**Frontend Hosting:** Netlify
+Frontend Hosting: Netlify
 
-**Language:** Java 21
+Live Website: https://finvis.netlify.app
 
-**Status:** Active Development
+Language: Java 21
+
+Status: Active Development
+
 
 ---
 
-# 👨‍💻 Author
+👨‍💻 Author
 
-**Akilesh A**
+Akilesh A
 
 Integrated M.Sc. Software Systems
 Coimbatore Institute of Technology
 
+
 ---
 
-<p align="center">
-
-💎 **FinvisIQ — Intelligent Finance. Smarter Decisions.**
+<p align="center">💎 FinvisIQ — Intelligent Finance. Smarter Decisions.
 
 </p>
