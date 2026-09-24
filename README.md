@@ -20,18 +20,14 @@ A cloud-enabled personal finance intelligence platform for tracking, analyzing, 
 
 </p>
 
+### 🌐Live Demo
 <p align="center">
   <a href="https://finvis.netlify.app">
     <img src="https://img.shields.io/badge/%F0%9F%9A%80%20LIVE%20DEMO-FinvisIQ-6C5CE7?style=for-the-badge&logo=netlify&logoColor=white" alt="Launch FinvisIQ Live Demo">
   </a>
 </p>
 
-<p align="center">
-  <b>🌐 Live Application:</b>
-  <a href="https://finvis.netlify.app">finvis.netlify.app</a>
-</p>
 
----
 
 ## 📌 Overview
 
@@ -47,7 +43,6 @@ The platform combines a modern web application, a native JavaFX desktop client, 
   </a>
 </p>
 
-**Live Website:** https://finvis.netlify.app
 
 ### Core Architecture
 
